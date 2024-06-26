@@ -1,1 +1,1 @@
-# Codificacao-Huffman-C
+# Codificacao Huffman feita em C
