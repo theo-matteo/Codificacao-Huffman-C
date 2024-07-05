@@ -1,6 +1,9 @@
 #ifndef _TREE_H
 #define _TREE_H
 
+#include <stdio.h>
+#include "bitmap.h"
+
 typedef struct tree tTree;
 
 /// @brief Cria uma nova arvore 
@@ -27,15 +30,41 @@ unsigned int getPeso (tTree* tree);
 /// @param t1 
 /// @param t2 
 /// @return 1 - se t1 for maior que t2, 0 - caso contrarios
-int compareTrees(void* t1, void* t2);
+int compareTrees(const void*t1, const void* t2);
 
+
+/// @brief Obtem o tamanho da arvore 
+/// @param tree 
+/// @return 
+unsigned int getSizeTree(tTree* tree);
+
+
+/// @brief 
+/// @param tree 
 void unsetLeafTree(tTree* tree);
 
+/// @brief 
+/// @param root 
+/// @param node 
 void setRightNode(tTree* root, tTree* node);
 
+/// @brief 
+/// @param root 
+/// @param node 
 void setLeftNode(tTree* root, tTree* node);
 
+/// @brief 
+/// @param tree 
+/// @param file 
+void writeTreeBinaryFile(tTree* tree, FILE* file);
+
+
+/// @brief 
+/// @param t 
 void printTree(void* t);
+
+void searchTree (tTree* tree, char target, bitmap* b, int* flag);
+
 
 /// @brief Libera a memoria da arvore
 /// @param arvore

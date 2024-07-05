@@ -1,6 +1,6 @@
 #include "tree.h"
 #include <stdlib.h>
-#include <stdio.h>
+
 
 struct tree {
 
@@ -50,16 +50,97 @@ void unsetLeafTree(tTree* tree) {
   tree->isLeafNode = 0;
 }
 
+
 unsigned int getPeso (tTree* tree) {
   return tree->peso;
 }
 
-int compareTrees(void* t1, void* t2) {
 
-  tTree* tree1 = (tTree*) t1;
-  tTree* tree2 = (tTree*) t2;
+void writeTreeBinaryFile(tTree* tree, FILE* file) {
 
-  return getPeso(tree1) > getPeso(tree2);
+    if (tree == NULL) return;
+
+    // Flag que indica se uma arvore eh folha ou nao
+    char c = tree->isLeafNode ? 'F' : 'N';
+    fwrite(&c, sizeof(char), 1, file);
+
+    // Verifica se a arvore eh uma folha e escreve seu caracter
+    if (tree->isLeafNode) {
+        fwrite(&tree->character, sizeof(char), 1, file);
+        fwrite(&tree->peso, sizeof(int), 1, file);
+    } else {
+        fwrite(&tree->peso, sizeof(int), 1, file);
+        writeTreeBinaryFile(tree->left, file);
+        writeTreeBinaryFile(tree->right, file);
+    }
+}
+
+tTree* createTreeFromBinary (FILE* binaryFile) {
+
+    char flag;
+    fread(&flag, sizeof(char), 1, binaryFile);
+
+    tTree* tree = createTree();
+
+    // Se for uma folha, le o caracter e a frequencia
+    if (flag == 'F') {
+        fread(&tree->character, sizeof(char), 1, binaryFile);
+        fread(&tree->peso, sizeof(int), 1, binaryFile);
+    } else {
+        fread(&tree->peso, sizeof(int), 1, binaryFile);
+        tree->left = createTreeFromBinary(binaryFile);
+        tree->right = createTreeFromBinary(binaryFile);
+    }
+  
+    return tree;
+}
+
+int compareTrees(const void* t1, const void* t2) {
+
+    tTree* tree1 = *((tTree**) t1);
+    tTree* tree2 = *((tTree**) t2);
+
+    if (tree1 == NULL) return 1;
+    else if (tree2 == NULL) return -1;
+    else if (tree1 == NULL && tree2 == NULL) return 0;
+
+    return getPeso(tree1) - getPeso(tree2);
+}
+
+unsigned int getSizeTree(tTree* tree) {
+
+  if (tree == NULL) return 0;
+
+  int right = getSizeTree(tree->right) + 1;
+  int left = getSizeTree(tree->left) + 1;
+
+  return (right > left ? right : left);
+}
+
+void searchTree (tTree* tree, char target, bitmap* b, int* flag) {
+
+  if (tree == NULL) return;
+
+  // Caso tenha encontrado o caracter atualiza estado da flag
+  if (tree->character == target) {
+    *flag = 1;
+    return;
+  }
+
+  searchTree(tree->right, target, b, flag);
+  if (*flag == 1) {
+    bitmapAppendLeastSignificantBit(b, 1);
+    return;
+  }
+
+  searchTree(tree->left, target, b, flag);
+  if (*flag == 1) {
+    bitmapAppendLeastSignificantBit(b, 0);
+    return;
+  }
+
+  
+
 }
 
 void printTree(void* t) {
@@ -67,18 +148,17 @@ void printTree(void* t) {
   if (t == NULL) return;
 
   tTree* tree = (tTree*) t;
-  printf("%d ", tree->peso);
-  return;
-
-  printTree(tree->right);
+  printf("Peso: %d\n", tree->peso);
+  
   printTree(tree->left);
+  printTree(tree->right);
 
 }
 
 void freeTree(void* tree) {
 
+  if (tree == NULL) return;
   tTree* t = (tTree*) tree;
-  if (t == NULL) return;
 
   freeTree(t->right);
   freeTree(t->left);

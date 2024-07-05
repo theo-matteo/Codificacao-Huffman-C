@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "utils.h": "c",
+        "tree.h": "c",
+        "array": "c",
+        "memory": "c",
+        "functional": "c",
+        "tuple": "c",
+        "utility": "c",
+        "stdlib.h": "c"
+    }
+}
