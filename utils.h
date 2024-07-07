@@ -2,7 +2,7 @@
 #define _UTILS_H
 
 #define VECTOR_SIZE 128
-#define PSEUDOCARACTER '_'
+#define PSEUDOCARACTER '\0'
 
 #include "tree.h"
 

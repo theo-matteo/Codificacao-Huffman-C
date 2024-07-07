@@ -78,11 +78,12 @@ void encodeMessage (FILE* file, FILE* binaryFile, tTree* tree) {
 
     while (end == false) {
 
+        // Obtem caracter do arquivo
         c = getc(file);
 
         // No fim do arquivo, adiciona o pseudocaracter
         if (c == EOF) {
-            end = true;
+            end = true; // Sinaliza fim do bitmap e sai do loop no fim
             c = PSEUDOCARACTER;
         }
 
@@ -146,16 +147,12 @@ void encodeMessage (FILE* file, FILE* binaryFile, tTree* tree) {
     for (int i = 0; i < bits / 8; i++)
         fwrite(&conteudo[i], sizeof(unsigned char), 1, binaryFile);
 
-
-
     /* 
     for (int i = 0; i < bitmapGetLength(message); i++) {
         printf("%d", bitmapGetBit(message, i));
     }
     printf("\n");	
     */
-
-
 
     bitmapLibera(message);
     free(flag);
@@ -181,7 +178,7 @@ void decodeMessage (FILE* binaryfile, tTree* tree) {
             bitmapAppendLeastSignificantBit(b, bit);
         }
 
-        // Coloca esse bitmap na mensagem
+        // Coloca esse bitmap na mensagem (bitmap completo)
         if (message == NULL) message = b;    
         else {
             // Cria um novo bitmap

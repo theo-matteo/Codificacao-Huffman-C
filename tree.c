@@ -99,8 +99,8 @@ char searchCharTree (bitmap* b, int* index, tTree* tree) {
   // Caso nao encontre o caracter ou ultrapassou o tamanho do bitmap
   if (tree == NULL || *index >= bitmapGetLength(b)) return '\0';
 
-  // Caso encontre caracter retorna
-  if (tree->character) return tree->character;
+  // Caso encontre a folha de arvore retorna seu caracter
+  if (tree->isLeafNode) return tree->character;
 
   if (bitmapGetBit(b, *index) == 1) {
     (*index)++;
