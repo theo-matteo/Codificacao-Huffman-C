@@ -60,7 +60,12 @@ int main(int argc, char const *argv[])
 
     // Retorna o ponteiro do arquivo para o inicio
     fseek(file, 0, SEEK_SET);
+
+    // Escreve a mensagem no arquivo binario
     encodeMessage(file, binaryFile, root);
+
+    // Imprime arvore (teste)
+    // printTree(root);
 
     // Libera arvore completa
     freeTree(nodes[0]);

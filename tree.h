@@ -65,6 +65,8 @@ void printTree(void* t);
 
 void searchTree (tTree* tree, char target, bitmap* b, int* flag);
 
+tTree* createTreeFromBinary (FILE* binaryFile);
+
 
 /// @brief Libera a memoria da arvore
 /// @param arvore

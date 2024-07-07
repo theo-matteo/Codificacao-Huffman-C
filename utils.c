@@ -66,36 +66,77 @@ void encodeMessage (FILE* file, FILE* binaryFile, tTree* root) {
 
     // Flag para indicar se o caractere foi encontrado
     int* flag = (int*) calloc(1, sizeof(int));
-
     int size_tree = getSizeTree(root);
-    bitmap* b = bitmapInit(size_tree - 1);
-    searchTree(root, 'o', b, flag);
 
-    // Inverte bits do bitmap criando um novo mapa de bits
-    bitmap* new = bitmapInit(size_tree - 1);
+    // Bitmap que contera a messagem completa
+    bitmap* message = NULL;
 
-    for (int i = bitmapGetLength(b) - 1; i >= 0; i--) 
-        bitmapAppendLeastSignificantBit(new, bitmapGetBit(b, i));
-    bitmapLibera(b);
-
-    for (int i = 0; i < bitmapGetLength(new); i++) 
-        printf("%d ", bitmapGetBit(new, i));
-    
-    
-    
-    bitmapLibera(new);
-    free(flag);
-
-    /* 
-    int size_tree = getSizeTree(root);
 
     char c;
     while ( (c = getc(file)) != EOF) {
-        bitmap* b = bitmapInit(size_tree - 1);
-        bitmapLibera(b);
-    }
-    */
-        
 
+        // Atualiza flag
+        *flag = 0;
+
+        // Obtem o codigo binario do caracter realizando a busca na arvore
+        bitmap* b = bitmapInit(size_tree - 1);
+        searchTree(root, c, b, flag);
+
+        // Inverte os bits
+        bitmap* b_inverted = bitmapInit(size_tree - 1);
+        for (int i = bitmapGetLength(b) - 1; i >= 0; i--) 
+            bitmapAppendLeastSignificantBit(b_inverted, bitmapGetBit(b, i));
+        bitmapLibera(b);
+
+        // Imprime o codigo binario do caracter
+        /* 
+        printf("%c ", c);
+        for (int i = 0; i < bitmapGetLength(b_inverted); i++) {
+            printf("%d", bitmapGetBit(b_inverted, i));
+        }
+        printf("\n");
+        */
+
+        // Adiciona o codigo binario no bitmap da mensagem 
+        if (message == NULL) {
+            message = b_inverted;
+        }
+        else {
+
+            // Aumenta espaco do message
+            // bitmap* new_message = bitmapInit(bitmapGetMaxSize(message) + bitmapGetMaxSize(b_inverted));
+            bitmap* new_message = bitmapInit(bitmapGetLength(message) + bitmapGetLength(b_inverted));
+
+            // Copia o conteudo do message para o new_message
+            for (int i = 0; i < bitmapGetLength(message); i++) 
+                bitmapAppendLeastSignificantBit(new_message, bitmapGetBit(message, i));
+            
+            // Copia o conteudo do b_inverted para o new_message
+            for (int i = 0; i < bitmapGetLength(b_inverted); i++) 
+                bitmapAppendLeastSignificantBit(new_message, bitmapGetBit(b_inverted, i));
+
+        
+            bitmapLibera(message);
+            bitmapLibera(b_inverted);
+
+            // Atualiza message
+            message = new_message;
+        }
+    }
+
+    // Salva mensagem no arquivo binario 
+    unsigned char* conteudo = bitmapGetContents(message);
+    // Escrever cada caracter do conteudo fwrite(conteudo[i])
+
+    /* 
+    printf("Bitmap length: %d\n", bitmapGetLength(message));
+    for (int i = 0; i < bitmapGetLength(message); i++) {
+        printf("%d", bitmapGetBit(message, i));
+    }
+    printf("\n");	
+    */
+
+    bitmapLibera(message);
+    free(flag);
 }
 

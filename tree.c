@@ -84,9 +84,11 @@ tTree* createTreeFromBinary (FILE* binaryFile) {
 
     // Se for uma folha, le o caracter e a frequencia
     if (flag == 'F') {
+        tree->isLeafNode = 1;
         fread(&tree->character, sizeof(char), 1, binaryFile);
         fread(&tree->peso, sizeof(int), 1, binaryFile);
     } else {
+        tree->isLeafNode = 0;
         fread(&tree->peso, sizeof(int), 1, binaryFile);
         tree->left = createTreeFromBinary(binaryFile);
         tree->right = createTreeFromBinary(binaryFile);
@@ -148,7 +150,9 @@ void printTree(void* t) {
   if (t == NULL) return;
 
   tTree* tree = (tTree*) t;
-  printf("Peso: %d\n", tree->peso);
+
+  if (tree->isLeafNode)
+    printf("Peso: %d Caracter: %c\n", tree->peso, tree->character);
   
   printTree(tree->left);
   printTree(tree->right);
