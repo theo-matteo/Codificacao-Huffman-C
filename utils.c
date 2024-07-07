@@ -1,6 +1,7 @@
 #include "utils.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 
 static int getNumItensVector(tTree* nodes [], unsigned int size_nodes) {
@@ -126,7 +127,18 @@ void encodeMessage (FILE* file, FILE* binaryFile, tTree* root) {
 
     // Salva mensagem no arquivo binario 
     unsigned char* conteudo = bitmapGetContents(message);
-    // Escrever cada caracter do conteudo fwrite(conteudo[i])
+
+    // Arredonda o numero de bits da mensagem
+    int bits = bitmapGetLength(message);
+    while (bits % 8 != 0) bits++;
+
+    // Escreve o conteudo do bitmap no arquivo binario
+    for (int i = 0; i < bits / 8; i++)
+        fwrite(&conteudo[i], sizeof(unsigned char), 1, binaryFile);
+
+    // Adiciona o pseudocaracter no fim do arquivo binario
+    char pseudocaracter = '\0';
+    fwrite(&pseudocaracter, sizeof(char), 1, binaryFile);
 
     /* 
     printf("Bitmap length: %d\n", bitmapGetLength(message));
@@ -136,7 +148,64 @@ void encodeMessage (FILE* file, FILE* binaryFile, tTree* root) {
     printf("\n");	
     */
 
+
+
     bitmapLibera(message);
     free(flag);
+}
+
+void decodeMessage (FILE* binaryfile, tTree* root) {
+
+    // Le cada caracter armazenado no arquivo binario
+    unsigned char c;
+
+    // Mensagem que sera decodificada
+    bitmap* message = NULL;
+
+    // Enquanto a leitura for bem sucedida e nao chegou no pseudocaracter
+    while (fread(&c, sizeof(unsigned char), 1, binaryfile) && c != '\0') {
+        
+        // Armazena os bits do primeiro caracter
+        bitmap* b = bitmapInit(8);
+
+        // Itera sobre os bits do caracter
+        for (int i = 7; i >= 0; i--) {
+            int bit = (c>>i) & 0x01;
+            bitmapAppendLeastSignificantBit(b, bit);
+        }
+
+        // Coloca esse bitmap na mensagem
+        if (message == NULL) message = b;    
+        else {
+            // Cria um novo bitmap
+            bitmap* new = bitmapInit(bitmapGetLength(message) + bitmapGetLength(b));
+
+            // Copia o conteudo do message para a nova mensagem
+            for (int i = 0; i < bitmapGetLength(message); i++) 
+                bitmapAppendLeastSignificantBit(new, bitmapGetBit(message, i));
+
+            // Copia o conteudo do b para a nova mensagem
+            for (int i = 0; i < bitmapGetLength(b); i++) 
+                bitmapAppendLeastSignificantBit(new, bitmapGetBit(b, i));
+
+            bitmapLibera(message);
+            bitmapLibera(b);
+            message = new;
+        }
+    } 
+
+    // Logica para encontrar o caracter na arvore
+    int* index = (int*) malloc(sizeof(int));
+    *index = 0;
+
+    while (*index <= bitmapGetLength(message) - 1) {
+        char c = searchCharTree(message, index, root);
+        printf("%c", c);
+    }
+    printf("\n");
+    
+
+    free(index);
+    bitmapLibera(message);
 }
 

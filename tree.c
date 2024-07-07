@@ -140,8 +140,24 @@ void searchTree (tTree* tree, char target, bitmap* b, int* flag) {
     bitmapAppendLeastSignificantBit(b, 0);
     return;
   }
+}
 
-  
+char searchCharTree (bitmap* b, int* index, tTree* tree) {
+
+  // Caso nao encontre o caracter ou ultrapassou o tamanho do bitmap
+  if (tree == NULL || *index >= bitmapGetLength(b)) return '\0';
+
+  // Caso encontre caracter retorna
+  if (tree->character) return tree->character;
+
+  if (bitmapGetBit(b, *index) == 1) {
+    (*index)++;
+    return searchCharTree(b, index, tree->right);
+  } else {
+    (*index)++;
+    return searchCharTree(b, index, tree->left);
+  }
+
 
 }
 

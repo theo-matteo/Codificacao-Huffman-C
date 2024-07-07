@@ -65,6 +65,8 @@ void printTree(void* t);
 
 void searchTree (tTree* tree, char target, bitmap* b, int* flag);
 
+char searchCharTree (bitmap* b, int* index, tTree* tree);
+
 tTree* createTreeFromBinary (FILE* binaryFile);
 
 

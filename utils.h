@@ -24,5 +24,7 @@ void executeAlgorithm(tTree* nodes [], unsigned int size);
 
 void encodeMessage (FILE* file, FILE* binaryFile, tTree* root);
 
+void decodeMessage (FILE* binaryfile, tTree* root);
+
 
 #endif

@@ -18,11 +18,14 @@ int main (int argc, char const *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    // Cria a arvore a partir do arquivo binario
     tTree* root = createTreeFromBinary(binaryFile);
-    printTree(root);
 
+    // Ler a sequencia de bits do arquivo binario
+    decodeMessage(binaryFile, root);
+
+    // printTree(root); (teste de impressao)
     freeTree(root);
-
     
     fclose(binaryFile);
     return EXIT_SUCCESS;
