@@ -28,6 +28,9 @@ int main(int argc, char const *argv[])
     while ( (c = getc(file)) != EOF) 
         vector[c]++;
 
+    // Incrementa o pseudocaracter
+    vector[PSEUDOCARACTER]++;
+
     // Cria um vetor para armazenar as arvores
     unsigned int size = getNumCharacters(vector);
     tTree* nodes[size];

@@ -63,25 +63,35 @@ void executeAlgorithm(tTree* nodes [], unsigned int size) {
     }
 }
 
-void encodeMessage (FILE* file, FILE* binaryFile, tTree* root) {
+void encodeMessage (FILE* file, FILE* binaryFile, tTree* tree) {
 
     // Flag para indicar se o caractere foi encontrado
     int* flag = (int*) calloc(1, sizeof(int));
-    int size_tree = getSizeTree(root);
+    int size_tree = getSizeTree(tree);
 
     // Bitmap que contera a messagem completa
     bitmap* message = NULL;
 
-
+    // Flag para indicar fim da construcao do bitmap
+    bool end = false;
     char c;
-    while ( (c = getc(file)) != EOF) {
+
+    while (end == false) {
+
+        c = getc(file);
+
+        // No fim do arquivo, adiciona o pseudocaracter
+        if (c == EOF) {
+            end = true;
+            c = PSEUDOCARACTER;
+        }
 
         // Atualiza flag
         *flag = 0;
 
         // Obtem o codigo binario do caracter realizando a busca na arvore
         bitmap* b = bitmapInit(size_tree - 1);
-        searchTree(root, c, b, flag);
+        searchTree(tree, c, b, flag);
 
         // Inverte os bits
         bitmap* b_inverted = bitmapInit(size_tree - 1);
@@ -136,12 +146,9 @@ void encodeMessage (FILE* file, FILE* binaryFile, tTree* root) {
     for (int i = 0; i < bits / 8; i++)
         fwrite(&conteudo[i], sizeof(unsigned char), 1, binaryFile);
 
-    // Adiciona o pseudocaracter no fim do arquivo binario
-    char pseudocaracter = '\0';
-    fwrite(&pseudocaracter, sizeof(char), 1, binaryFile);
+
 
     /* 
-    printf("Bitmap length: %d\n", bitmapGetLength(message));
     for (int i = 0; i < bitmapGetLength(message); i++) {
         printf("%d", bitmapGetBit(message, i));
     }
@@ -154,7 +161,7 @@ void encodeMessage (FILE* file, FILE* binaryFile, tTree* root) {
     free(flag);
 }
 
-void decodeMessage (FILE* binaryfile, tTree* root) {
+void decodeMessage (FILE* binaryfile, tTree* tree) {
 
     // Le cada caracter armazenado no arquivo binario
     unsigned char c;
@@ -163,7 +170,7 @@ void decodeMessage (FILE* binaryfile, tTree* root) {
     bitmap* message = NULL;
 
     // Enquanto a leitura for bem sucedida e nao chegou no pseudocaracter
-    while (fread(&c, sizeof(unsigned char), 1, binaryfile) && c != '\0') {
+    while (fread(&c, sizeof(unsigned char), 1, binaryfile)) {
         
         // Armazena os bits do primeiro caracter
         bitmap* b = bitmapInit(8);
@@ -192,14 +199,18 @@ void decodeMessage (FILE* binaryfile, tTree* root) {
             bitmapLibera(b);
             message = new;
         }
+
+        // Caso encontre o pseudocaracter sai do loop
+        if (c == PSEUDOCARACTER) break;
     } 
 
-    // Logica para encontrar o caracter na arvore
+    // Implementacao da logica para buscar a mensagem na arvore
     int* index = (int*) malloc(sizeof(int));
     *index = 0;
 
     while (*index <= bitmapGetLength(message) - 1) {
-        char c = searchCharTree(message, index, root);
+        char c = searchCharTree(message, index, tree);
+        if (c == PSEUDOCARACTER) break;
         printf("%c", c);
     }
     printf("\n");

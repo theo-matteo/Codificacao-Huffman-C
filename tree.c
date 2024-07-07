@@ -30,51 +30,6 @@ tTree* createTree() {
   return tree;
 }
 
-void setChar(tTree* t, char c) {
-  t->character = c;
-}
-
-void setPeso(tTree* tree, unsigned int f) {
-  tree->peso = f;
-}
-
-void setRightNode(tTree* root, tTree* node) {
-  root->right = node;
-}
-
-void setLeftNode(tTree* root, tTree* node) {
-  root->left = node;
-}
-
-void unsetLeafTree(tTree* tree) {
-  tree->isLeafNode = 0;
-}
-
-
-unsigned int getPeso (tTree* tree) {
-  return tree->peso;
-}
-
-
-void writeTreeBinaryFile(tTree* tree, FILE* file) {
-
-    if (tree == NULL) return;
-
-    // Flag que indica se uma arvore eh folha ou nao
-    char c = tree->isLeafNode ? 'F' : 'N';
-    fwrite(&c, sizeof(char), 1, file);
-
-    // Verifica se a arvore eh uma folha e escreve seu caracter
-    if (tree->isLeafNode) {
-        fwrite(&tree->character, sizeof(char), 1, file);
-        fwrite(&tree->peso, sizeof(int), 1, file);
-    } else {
-        fwrite(&tree->peso, sizeof(int), 1, file);
-        writeTreeBinaryFile(tree->left, file);
-        writeTreeBinaryFile(tree->right, file);
-    }
-}
-
 tTree* createTreeFromBinary (FILE* binaryFile) {
 
     char flag;
@@ -97,26 +52,23 @@ tTree* createTreeFromBinary (FILE* binaryFile) {
     return tree;
 }
 
-int compareTrees(const void* t1, const void* t2) {
+void writeTreeBinaryFile(tTree* tree, FILE* binaryFile) {
 
-    tTree* tree1 = *((tTree**) t1);
-    tTree* tree2 = *((tTree**) t2);
+    if (tree == NULL) return;
 
-    if (tree1 == NULL) return 1;
-    else if (tree2 == NULL) return -1;
-    else if (tree1 == NULL && tree2 == NULL) return 0;
+    // Flag que indica se uma arvore eh folha ou nao
+    char c = tree->isLeafNode ? 'F' : 'N';
+    fwrite(&c, sizeof(char), 1, binaryFile);
 
-    return getPeso(tree1) - getPeso(tree2);
-}
-
-unsigned int getSizeTree(tTree* tree) {
-
-  if (tree == NULL) return 0;
-
-  int right = getSizeTree(tree->right) + 1;
-  int left = getSizeTree(tree->left) + 1;
-
-  return (right > left ? right : left);
+    // Verifica se a arvore eh uma folha e escreve seu caracter
+    if (tree->isLeafNode) {
+        fwrite(&tree->character, sizeof(char), 1, binaryFile);
+        fwrite(&tree->peso, sizeof(int), 1, binaryFile);
+    } else {
+        fwrite(&tree->peso, sizeof(int), 1, binaryFile);
+        writeTreeBinaryFile(tree->left, binaryFile);
+        writeTreeBinaryFile(tree->right, binaryFile);
+    }
 }
 
 void searchTree (tTree* tree, char target, bitmap* b, int* flag) {
@@ -153,12 +105,57 @@ char searchCharTree (bitmap* b, int* index, tTree* tree) {
   if (bitmapGetBit(b, *index) == 1) {
     (*index)++;
     return searchCharTree(b, index, tree->right);
-  } else {
+  } 
+  else {
     (*index)++;
     return searchCharTree(b, index, tree->left);
   }
+}
 
+int compareTrees(const void* t1, const void* t2) {
 
+    tTree* tree1 = *((tTree**) t1);
+    tTree* tree2 = *((tTree**) t2);
+
+    if (tree1 == NULL) return 1;
+    else if (tree2 == NULL) return -1;
+    else if (tree1 == NULL && tree2 == NULL) return 0;
+
+    return getPeso(tree1) - getPeso(tree2);
+}
+
+unsigned int getSizeTree(tTree* tree) {
+
+  if (tree == NULL) return 0;
+
+  int right = getSizeTree(tree->right) + 1;
+  int left = getSizeTree(tree->left) + 1;
+
+  return (right > left ? right : left);
+}
+
+void setChar(tTree* t, char c) {
+  t->character = c;
+}
+
+void setPeso(tTree* tree, unsigned int f) {
+  tree->peso = f;
+}
+
+void setRightNode(tTree* root, tTree* node) {
+  root->right = node;
+}
+
+void setLeftNode(tTree* root, tTree* node) {
+  root->left = node;
+}
+
+void unsetLeafTree(tTree* tree) {
+  tree->isLeafNode = 0;
+}
+
+unsigned int getPeso (tTree* tree) {
+  return tree->peso;
 }
 
 void printTree(void* t) {
@@ -172,7 +169,6 @@ void printTree(void* t) {
   
   printTree(tree->left);
   printTree(tree->right);
-
 }
 
 void freeTree(void* tree) {
