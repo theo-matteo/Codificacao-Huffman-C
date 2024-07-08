@@ -6,7 +6,7 @@
 
 static int getNumItensVector(tTree* nodes [], unsigned int size_nodes) {
     int counter = 0;
-    for (int i = 0; i < size_nodes; i++) 
+    for (unsigned int i = 0; i < size_nodes; i++) 
         if (nodes[i] != NULL) counter++;
     return counter;
 }
@@ -100,10 +100,10 @@ void encodeMessage (FILE* file, FILE* binaryFile, tTree* tree) {
             bitmapAppendLeastSignificantBit(b_inverted, bitmapGetBit(b, i));
         bitmapLibera(b);
 
-        // Imprime o codigo binario do caracter
+        // Imprime o codigo binario do caracter (propositos de depuracao)
         /* 
         printf("%c ", c);
-        for (int i = 0; i < bitmapGetLength(b_inverted); i++) {
+        for (unsigned i = 0; i < bitmapGetLength(b_inverted); i++) {
             printf("%d", bitmapGetBit(b_inverted, i));
         }
         printf("\n");
@@ -120,11 +120,11 @@ void encodeMessage (FILE* file, FILE* binaryFile, tTree* tree) {
             bitmap* new_message = bitmapInit(bitmapGetLength(message) + bitmapGetLength(b_inverted));
 
             // Copia o conteudo do message para o new_message
-            for (int i = 0; i < bitmapGetLength(message); i++) 
+            for (unsigned int i = 0; i < bitmapGetLength(message); i++) 
                 bitmapAppendLeastSignificantBit(new_message, bitmapGetBit(message, i));
             
             // Copia o conteudo do b_inverted para o new_message
-            for (int i = 0; i < bitmapGetLength(b_inverted); i++) 
+            for (unsigned int i = 0; i < bitmapGetLength(b_inverted); i++) 
                 bitmapAppendLeastSignificantBit(new_message, bitmapGetBit(b_inverted, i));
 
         
@@ -148,7 +148,7 @@ void encodeMessage (FILE* file, FILE* binaryFile, tTree* tree) {
         fwrite(&conteudo[i], sizeof(unsigned char), 1, binaryFile);
 
     /* 
-    for (int i = 0; i < bitmapGetLength(message); i++) {
+    for (unsigned int i = 0; i < bitmapGetLength(message); i++) {
         printf("%d", bitmapGetBit(message, i));
     }
     printf("\n");	
@@ -185,11 +185,11 @@ void decodeMessage (FILE* binaryfile, tTree* tree) {
             bitmap* new = bitmapInit(bitmapGetLength(message) + bitmapGetLength(b));
 
             // Copia o conteudo do message para a nova mensagem
-            for (int i = 0; i < bitmapGetLength(message); i++) 
+            for (unsigned int i = 0; i < bitmapGetLength(message); i++) 
                 bitmapAppendLeastSignificantBit(new, bitmapGetBit(message, i));
 
             // Copia o conteudo do b para a nova mensagem
-            for (int i = 0; i < bitmapGetLength(b); i++) 
+            for (unsigned int i = 0; i < bitmapGetLength(b); i++) 
                 bitmapAppendLeastSignificantBit(new, bitmapGetBit(b, i));
 
             bitmapLibera(message);
@@ -201,19 +201,31 @@ void decodeMessage (FILE* binaryfile, tTree* tree) {
         if (c == PSEUDOCARACTER) break;
     } 
 
-    // Implementacao da logica para buscar a mensagem na arvore
-    int* index = (int*) malloc(sizeof(int));
+    // Cria arquivo de output
+    FILE* output = fopen("output.txt", "w");
+    if (output == NULL) {
+        printf("Erro ao abrir arquivo de output\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Index para percorrer no bitmap (como se fosse um ponteiro pra cada bit)
+    unsigned int* index = (unsigned int*) malloc(sizeof(unsigned int));
     *index = 0;
 
+
+    // outra condicao: *index <= bitmapGetLength(message) - 1
+    // Enquanto nao encontrar o pseudocaracter, escrever os caracters encontrados no arquivo
+    fprintf(output, "Mensagem decodificada: ");
     while (*index <= bitmapGetLength(message) - 1) {
-        char c = searchCharTree(message, index, tree);
-        if (c == PSEUDOCARACTER) break;
-        printf("%c", c);
+        // Caso encontre o pseudocaracter sai do loop
+        if ((c = searchCharTree(message, index, tree)) == PSEUDOCARACTER) break;
+        // Escreve o caracter no arquivo de saida (output.txt)
+        fputc(c, output);
     }
-    printf("\n");
     
 
     free(index);
     bitmapLibera(message);
+    fclose(output);
 }
 

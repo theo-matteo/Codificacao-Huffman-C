@@ -1,7 +1,6 @@
 #include "tree.h"
 #include <stdlib.h>
 
-
 struct tree {
 
   char character; // Caractere armazenado
@@ -76,7 +75,7 @@ void searchTree (tTree* tree, char target, bitmap* b, int* flag) {
   if (tree == NULL) return;
 
   // Caso tenha encontrado o caracter atualiza estado da flag
-  if (tree->character == target) {
+  if (tree->isLeafNode && tree->character == target) {
     *flag = 1;
     return;
   }
@@ -94,10 +93,10 @@ void searchTree (tTree* tree, char target, bitmap* b, int* flag) {
   }
 }
 
-char searchCharTree (bitmap* b, int* index, tTree* tree) {
+char searchCharTree (bitmap* b, unsigned int* index, tTree* tree) {
 
-  // Caso nao encontre o caracter ou ultrapassou o tamanho do bitmap
-  if (tree == NULL || *index >= bitmapGetLength(b)) return '\0';
+  // Retorna pseudocaracter caso nao encontre o caracter ou ultrapssou tamanho do bitmap
+  if (tree == NULL || *index >= bitmapGetLength(b)) return PSEUDOCARACTER;
 
   // Caso encontre a folha de arvore retorna seu caracter
   if (tree->isLeafNode) return tree->character;
