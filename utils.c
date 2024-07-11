@@ -18,6 +18,16 @@ unsigned int getNumCharacters(int* vector) {
     return counter;
 }
 
+void vectorFrequencyInit (FILE* file, int* vector) {
+    // Le cada caractere do arquivo e armazena frequencia no vetor
+    int c;
+    while ( (c = getc(file)) != EOF) 
+        vector[c]++;
+
+    // Incrementa o pseudocaracter
+    vector[PSEUDOCARACTER]++;
+}
+
 void loadVectorTree (tTree* nodes [], int* vector) {
 
     int index = 0;
@@ -207,13 +217,20 @@ void decodeMessage (FILE* binaryfile, tTree* tree) {
         printf("Erro ao abrir arquivo de output\n");
         exit(EXIT_FAILURE);
     }
+    // Escreve um label inicial no arquivo
+    fprintf(output, "Mensagem decodificada: ");
+
+    // Caso nao haja nenhuma mensagem no arquivo binario
+    if (message == NULL) {
+        fclose(output);
+        return;
+    }
 
     // Index para percorrer no bitmap (como se fosse um ponteiro pra cada bit)
     unsigned int* index = (unsigned int*) malloc(sizeof(unsigned int));
     *index = 0;
 
     // Enquanto nao encontrar o pseudocaracter, escrever os caracters encontrados no arquivo
-    fprintf(output, "Mensagem decodificada: ");
     while ((c = searchCharTree(message, index, tree)) != PSEUDOCARACTER) {
         // Escreve o caracter no arquivo de saida (output.txt)
         fputc(c, output);

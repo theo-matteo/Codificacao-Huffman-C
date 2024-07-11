@@ -10,6 +10,8 @@
 unsigned int getNumCharacters(int* vector);
 
 
+void vectorFrequencyInit (FILE* file, int* vector);
+
 /// @brief Carrega o vetor de arvores com os caracteres e seus pesos
 /// @param nodes vetor das arvores
 /// @param vector que contem a frequencia de cada caracter

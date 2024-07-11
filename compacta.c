@@ -20,16 +20,11 @@ int main(int argc, char const *argv[])
         exit(EXIT_FAILURE);
     }
 
-    // Inicializa todas as posicoes do array com 0
+    // Cria vetor com todas posicoes com o valor zero
     int vector[VECTOR_SIZE] = {0};
 
-    // Le cada caractere do arquivo e armazena frequencia no vetor
-    int c;
-    while ( (c = getc(file)) != EOF) 
-        vector[c]++;
-
-    // Incrementa o pseudocaracter
-    vector[PSEUDOCARACTER]++;
+    // Inicializa vetor contabilizando a frequencia dos caracteres
+    vectorFrequencyInit(file, vector);
 
     // Cria um vetor para armazenar as arvores
     unsigned int size = getNumCharacters(vector);

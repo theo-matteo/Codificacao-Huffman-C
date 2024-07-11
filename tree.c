@@ -96,10 +96,7 @@ void searchTree (tTree* tree, char target, bitmap* b, int* flag) {
 char searchCharTree (bitmap* b, unsigned int* index, tTree* tree) {
 
   // Retorna pseudocaracter caso nao encontre o caracter ou ultrapssou tamanho do bitmap
-  if (tree == NULL || *index >= bitmapGetLength(b)) {
-    printf("Abortando busca: Acesso indevido no bitmap\n");
-    return PSEUDOCARACTER;
-  } 
+  if (tree == NULL || *index >= bitmapGetLength(b)) return PSEUDOCARACTER;
 
   // Caso encontre a folha de arvore retorna seu caracter
   if (tree->isLeafNode) return tree->character;

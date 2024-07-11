@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include "bitmap.h"
-#define PSEUDOCARACTER '\0'
+#define PSEUDOCARACTER '^'
 
 typedef struct tree tTree;
 
