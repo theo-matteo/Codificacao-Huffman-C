@@ -212,13 +212,9 @@ void decodeMessage (FILE* binaryfile, tTree* tree) {
     unsigned int* index = (unsigned int*) malloc(sizeof(unsigned int));
     *index = 0;
 
-
-    // outra condicao: *index <= bitmapGetLength(message) - 1
     // Enquanto nao encontrar o pseudocaracter, escrever os caracters encontrados no arquivo
     fprintf(output, "Mensagem decodificada: ");
-    while (*index <= bitmapGetLength(message) - 1) {
-        // Caso encontre o pseudocaracter sai do loop
-        if ((c = searchCharTree(message, index, tree)) == PSEUDOCARACTER) break;
+    while ((c = searchCharTree(message, index, tree)) != PSEUDOCARACTER) {
         // Escreve o caracter no arquivo de saida (output.txt)
         fputc(c, output);
     }
