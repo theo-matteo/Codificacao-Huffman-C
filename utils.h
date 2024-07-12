@@ -9,14 +9,15 @@
 /// @return numero de caracteres
 unsigned int getNumCharacters(int* vector);
 
-
+/// @brief Realiza contablizacao da frequencia de caracter um arquivo de texto e armazenar em um vetor
+/// @param file arquivo de texto
+/// @param vector vetor para armazenar a frequencia dos caracteres na posicao ascii do array
 void vectorFrequencyInit (FILE* file, int* vector);
 
-/// @brief Carrega o vetor de arvores com os caracteres e seus pesos
+/// @brief Carrega o vetor de arvores alocando memoria e setando seus dados: caracteres e seus pesos
 /// @param nodes vetor das arvores
-/// @param vector que contem a frequencia de cada caracter
+/// @param vector vetor de contablizacao de caracteres
 void loadVectorTree (tTree* nodes [], int* vector);
-
 
 /// @brief Executa o algoritmo de huffman
 /// @param nodes vetor de nos das arvores 

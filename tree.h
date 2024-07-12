@@ -17,8 +17,8 @@ tTree* createTree();
 tTree* createTreeFromBinary (FILE* binaryFile);
 
 /// @brief Escreve uma arvore binaria em um arquivo binario
-/// @param tree 
-/// @param file 
+/// @param tree arvore de codificacao
+/// @param binaryFile arquivo binario
 void writeTreeBinaryFile(tTree* tree, FILE* binaryFile);
 
 
@@ -77,14 +77,12 @@ void setRightNode(tTree* root, tTree* node);
 /// @param node no a ser adicionado
 void setLeftNode(tTree* root, tTree* node);
 
-
 /// @brief Imprime a arvore 
 /// @param t void pointer da arvore
 void printTree(void* t);
 
-
 /// @brief Libera a memoria da arvore
-/// @param arvore
+/// @param tree arvore 
 void freeTree(void* tree);
 
 #endif

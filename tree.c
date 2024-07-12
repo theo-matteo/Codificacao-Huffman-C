@@ -24,16 +24,18 @@ tTree* createTree() {
   tree->peso = 0;
 
   // Uma nova arvore nao possui filhos, logo eh um no folha
-  tree->isLeafNode = 1; // 
+  tree->isLeafNode = 1; 
 
   return tree;
 }
 
 tTree* createTreeFromBinary (FILE* binaryFile) {
 
+    // Ler um caractere que indica se uma arvore eh folha ou nao
     char flag;
     fread(&flag, sizeof(char), 1, binaryFile);
 
+    // Cria nova arvore
     tTree* tree = createTree();
 
     // Se for uma folha, le o caracter e a frequencia
@@ -55,7 +57,7 @@ void writeTreeBinaryFile(tTree* tree, FILE* binaryFile) {
 
     if (tree == NULL) return;
 
-    // Flag que indica se uma arvore eh folha ou nao
+    // Escreve um caractere que indica se uma arvore eh folha ou nao
     char c = tree->isLeafNode ? 'F' : 'N';
     fwrite(&c, sizeof(char), 1, binaryFile);
 
@@ -65,6 +67,8 @@ void writeTreeBinaryFile(tTree* tree, FILE* binaryFile) {
         fwrite(&tree->peso, sizeof(int), 1, binaryFile);
     } else {
         fwrite(&tree->peso, sizeof(int), 1, binaryFile);
+
+        // Escreve os filhos no arquivo binario recursivamente
         writeTreeBinaryFile(tree->left, binaryFile);
         writeTreeBinaryFile(tree->right, binaryFile);
     }
@@ -74,7 +78,7 @@ void searchTree (tTree* tree, char target, bitmap* b, int* flag) {
 
   if (tree == NULL) return;
 
-  // Caso tenha encontrado o caracter atualiza estado da flag
+  // Caso tenha encontrado o caracter atualiza estado da flag e sai da recursao
   if (tree->isLeafNode && tree->character == target) {
     *flag = 1;
     return;
@@ -101,6 +105,7 @@ char searchCharTree (bitmap* b, unsigned int* index, tTree* tree) {
   // Caso encontre a folha de arvore retorna seu caracter
   if (tree->isLeafNode) return tree->character;
 
+  // De acordo com o bit do bitmap em determinado index escolhe a direcao que vai na arvore
   if (bitmapGetBit(b, *index) == 1) {
     (*index)++;
     return searchCharTree(b, index, tree->right);
@@ -113,14 +118,14 @@ char searchCharTree (bitmap* b, unsigned int* index, tTree* tree) {
 
 int compareTrees(const void* t1, const void* t2) {
 
-    tTree* tree1 = *((tTree**) t1);
-    tTree* tree2 = *((tTree**) t2);
+  tTree* tree1 = *((tTree**) t1);
+  tTree* tree2 = *((tTree**) t2);
 
-    if (tree1 == NULL) return 1;
-    else if (tree2 == NULL) return -1;
-    else if (tree1 == NULL && tree2 == NULL) return 0;
+  if (tree1 == NULL && tree2 == NULL) return 0;
+  else if (tree1 == NULL) return 1;
+  else if (tree2 == NULL) return -1;
 
-    return getPeso(tree1) - getPeso(tree2);
+  return getPeso(tree1) - getPeso(tree2);
 }
 
 unsigned int getSizeTree(tTree* tree) {

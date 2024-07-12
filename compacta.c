@@ -13,24 +13,26 @@ int main(int argc, char const *argv[])
         exit(EXIT_FAILURE);
     }
     
-    // Abre o arquivo no diretorio fornecido
+    // Abre o arquivo no diretorio fornecido na linha de comando
     FILE* file = fopen(argv[1], "r");
     if (file == NULL) {
         printf("Falha ao abrir arquivo no caminho %s\n", argv[1]);
         exit(EXIT_FAILURE);
     }
 
-    // Cria vetor com todas posicoes com o valor zero
+    // Vetor que ira armazenar as frequencias do caracteres no texto
     int vector[VECTOR_SIZE] = {0};
 
     // Inicializa vetor contabilizando a frequencia dos caracteres
     vectorFrequencyInit(file, vector);
 
-    // Cria um vetor para armazenar as arvores
+    // Obtem a quantidade de caracteres nao repetidos 
     unsigned int size = getNumCharacters(vector);
+
+    // Vetor de arvores
     tTree* nodes[size];
 
-    // Inicializa vetor de arvores
+    // Inicializa vetor de arvores alocando memoria 
     loadVectorTree(nodes, vector);
 
     // Ordena os nodes

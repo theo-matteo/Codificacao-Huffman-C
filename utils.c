@@ -32,8 +32,11 @@ void loadVectorTree (tTree* nodes [], int* vector) {
 
     int index = 0;
     for (int i = 0; i < VECTOR_SIZE; i++) {
+
+        // Se o caractere com codigo ascii 'i' estava presente no arquivo de texto
         if (vector[i] != 0) {
-            // Cria uma nova arvore
+
+            // Cria uma nova arvore para esse caractere
             tTree* tree = createTree();
             setChar(tree, i);
             setPeso(tree, vector[i]);
@@ -47,14 +50,15 @@ void loadVectorTree (tTree* nodes [], int* vector) {
 
 void executeAlgorithm(tTree* nodes [], unsigned int size) {
 
+    // Realiza operacoes ate ter apenas um node de arvore no vetor
     while (getNumItensVector(nodes, size) >= 2) {
 
-        // Cria uma nova arvore
+        // Cria uma nova arvore tendo como filhos os dois primeiros nodes do vetor
         tTree* new = createTree();
         tTree* tree1 = nodes[0];
         tTree* tree2 = nodes[1];
 
-        // Remove os dois primeiros itens da lista
+        // 'Remove' os dois primeiros itens da lista
         nodes[0] = NULL;
         nodes[1] = NULL;
 
@@ -62,13 +66,14 @@ void executeAlgorithm(tTree* nodes [], unsigned int size) {
         setLeftNode(new, tree1);
         setRightNode(new, tree2);
 
-        // Configura atributos
+        // Configura atributos da nova arvore (peso + setar que nao eh folha mais)
         setPeso(new, getPeso(tree1) + getPeso(tree2));
         unsetLeafTree(new);
 
-        // Adiciona a nova arvore no array
+        // Adiciona a nova arvore na primeira posicao do array
         nodes[0] = new;
 
+        // Realiza ordernacao do vetor de acordo com a peso de cada arvore
         qsort(nodes, size, sizeof(tTree*), compareTrees);
     }
 }
@@ -77,11 +82,12 @@ void encodeMessage (FILE* file, FILE* binaryFile, tTree* tree) {
 
     // Flag para indicar se o caractere foi encontrado
     int* flag = (int*) calloc(1, sizeof(int));
-    int size_tree = getSizeTree(tree);
+    int size_tree = getSizeTree(tree); 
 
-    // Bitmap que contera a messagem completa
+    // Bitmap que ira ter a messagem completa em binario
     bitmap* message = NULL;
 
+    
     // Flag para indicar fim da construcao do bitmap
     bool end = false;
     char c;
@@ -100,11 +106,13 @@ void encodeMessage (FILE* file, FILE* binaryFile, tTree* tree) {
         // Atualiza flag
         *flag = 0;
 
-        // Obtem o codigo binario do caracter realizando a busca na arvore
+        // Cria um bitmap para armazenar o codigo binario do caractere
         bitmap* b = bitmapInit(size_tree - 1);
+
+        // Obtem o codigo binario do caracter realizando a busca na arvore (o qual vem invertido)
         searchTree(tree, c, b, flag);
 
-        // Inverte os bits
+        // Inverte os bits para obtem o caminho real percorrido na arvore
         bitmap* b_inverted = bitmapInit(size_tree - 1);
         for (int i = bitmapGetLength(b) - 1; i >= 0; i--) 
             bitmapAppendLeastSignificantBit(b_inverted, bitmapGetBit(b, i));
@@ -119,14 +127,13 @@ void encodeMessage (FILE* file, FILE* binaryFile, tTree* tree) {
         printf("\n");
         */
 
-        // Adiciona o codigo binario no bitmap da mensagem 
+        // Adiciona o codigo binario no bitmap da mensagem completa  
         if (message == NULL) {
             message = b_inverted;
         }
         else {
 
-            // Aumenta espaco do message
-            // bitmap* new_message = bitmapInit(bitmapGetMaxSize(message) + bitmapGetMaxSize(b_inverted));
+            // Cria um novo bitmap para messagem com um tamanho maior para adicionar a nova sequencia de bits
             bitmap* new_message = bitmapInit(bitmapGetLength(message) + bitmapGetLength(b_inverted));
 
             // Copia o conteudo do message para o new_message
@@ -137,11 +144,11 @@ void encodeMessage (FILE* file, FILE* binaryFile, tTree* tree) {
             for (unsigned int i = 0; i < bitmapGetLength(b_inverted); i++) 
                 bitmapAppendLeastSignificantBit(new_message, bitmapGetBit(b_inverted, i));
 
-        
+
             bitmapLibera(message);
             bitmapLibera(b_inverted);
 
-            // Atualiza message
+            // Atualiza message com novo valor 
             message = new_message;
         }
     }
@@ -173,7 +180,7 @@ void decodeMessage (FILE* binaryfile, tTree* tree) {
     // Le cada caracter armazenado no arquivo binario
     unsigned char c;
 
-    // Mensagem que sera decodificada
+    // bitmap que ira armazenar a messagem decodificada
     bitmap* message = NULL;
 
     // Enquanto a leitura for bem sucedida e nao chegou no pseudocaracter
@@ -182,7 +189,7 @@ void decodeMessage (FILE* binaryfile, tTree* tree) {
         // Armazena os bits do primeiro caracter
         bitmap* b = bitmapInit(8);
 
-        // Itera sobre os bits do caracter
+        // Itera sobre os bits do caracter e armazena o codigo binario
         for (int i = 7; i >= 0; i--) {
             int bit = (c>>i) & 0x01;
             bitmapAppendLeastSignificantBit(b, bit);
