@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 #include "bitmap.h"
-#define PSEUDOCARACTER '^'
 
 typedef struct tree tTree;
 
@@ -30,12 +29,8 @@ void writeTreeBinaryFile(tTree* tree, FILE* binaryFile);
 void searchTree (tTree* tree, char target, bitmap* b, int* flag);
 
 
-/// @brief Busca um caractere na arvore binaria dado um caminho binario (bitmap)
-/// @param b bitmap
-/// @param index index atual do bitmap
-/// @param tree arvore binaria
-/// @return caractere buscado
-char searchCharTree (bitmap* b, unsigned int* index, tTree* tree);
+
+char searchCharTree (bitmap* b, unsigned int* index, unsigned int limitBits, tTree* tree);
 
 /// @brief Compara duas arvores de acordo com a frequencia de caracteres
 /// @param t1 primeira arvore

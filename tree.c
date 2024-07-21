@@ -97,10 +97,10 @@ void searchTree (tTree* tree, char target, bitmap* b, int* flag) {
   }
 }
 
-char searchCharTree (bitmap* b, unsigned int* index, tTree* tree) {
+char searchCharTree (bitmap* b, unsigned int* index, unsigned int limitBits, tTree* tree) {
 
-  // Retorna pseudocaracter caso nao encontre o caracter ou ultrapssou tamanho do bitmap
-  if (tree == NULL || *index >= bitmapGetLength(b)) return PSEUDOCARACTER;
+  // Caso ultrapasse a quantidade de bits presente, sai do loop
+  if (tree == NULL || *index > limitBits) return '\0';
 
   // Caso encontre a folha de arvore retorna seu caracter
   if (tree->isLeafNode) return tree->character;
@@ -108,11 +108,11 @@ char searchCharTree (bitmap* b, unsigned int* index, tTree* tree) {
   // De acordo com o bit do bitmap em determinado index escolhe a direcao que vai na arvore
   if (bitmapGetBit(b, *index) == 1) {
     (*index)++;
-    return searchCharTree(b, index, tree->right);
+    return searchCharTree(b, index, limitBits, tree->right);
   } 
   else {
     (*index)++;
-    return searchCharTree(b, index, tree->left);
+    return searchCharTree(b, index, limitBits, tree->left);
   }
 }
 

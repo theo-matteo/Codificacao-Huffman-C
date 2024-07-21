@@ -14,7 +14,7 @@ int main(int argc, char const *argv[])
     }
     
     // Abre o arquivo no diretorio fornecido na linha de comando
-    FILE* file = fopen(argv[1], "r");
+    FILE* file = fopen(argv[1], "rb");
     if (file == NULL) {
         printf("Falha ao abrir arquivo no caminho %s\n", argv[1]);
         exit(EXIT_FAILURE);
@@ -65,7 +65,7 @@ int main(int argc, char const *argv[])
     encodeMessage(file, binaryFile, root);
 
     // Imprime arvore (teste)
-    // printTree(root);
+    printTree(root);
 
     // Libera arvore completa
     freeTree(nodes[0]);

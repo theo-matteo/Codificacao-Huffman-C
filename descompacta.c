@@ -22,7 +22,7 @@ int main (int argc, char const *argv[]) {
     tTree* root = createTreeFromBinary(binaryFile);
 
     // Ler a sequencia de bits do arquivo binario
-    decodeMessage(binaryFile, root);
+    decodeMessage(binaryFile, root, argv[1]);
 
     // printTree(root); (teste de impressao)
     freeTree(root);

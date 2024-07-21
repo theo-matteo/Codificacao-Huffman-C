@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
+
+// Define a quantidade de bits de uma mega
+#define Mb 1000000
 
 
 static int getNumItensVector(tTree* nodes [], unsigned int size_nodes) {
@@ -18,14 +22,30 @@ unsigned int getNumCharacters(int* vector) {
     return counter;
 }
 
-void vectorFrequencyInit (FILE* file, int* vector) {
-    // Le cada caractere do arquivo e armazena frequencia no vetor
-    int c;
-    while ( (c = getc(file)) != EOF) 
-        vector[c]++;
+static char* getExtensionFile (const char* filename) {
 
-    // Incrementa o pseudocaracter
-    vector[PSEUDOCARACTER]++;
+    char* extension = calloc(16, sizeof(char));
+    int j = 0;
+    bool flag = false;
+
+    for (int i = 0, n = strlen(filename); i < n; i++) {
+        if (filename[i] == '.') flag = !flag;
+        if (flag) extension[j++] = filename[i];
+    }
+
+
+    return extension;
+}
+
+void vectorFrequencyInit (FILE* file, int* vector) {
+
+    // Le sequencia de 8 bits (caracter) do arquivo fornecido e armazena frequencia no vetor
+    char c;
+
+    while (fread(&c, sizeof(unsigned char), 1, file) == 1) 
+        if (c >= 0 && c <= 127) vector[(int) c]++;
+    
+    
 }
 
 void loadVectorTree (tTree* nodes [], int* vector) {
@@ -84,24 +104,12 @@ void encodeMessage (FILE* file, FILE* binaryFile, tTree* tree) {
     int* flag = (int*) calloc(1, sizeof(int));
     int size_tree = getSizeTree(tree); 
 
-    // Bitmap que ira ter a messagem completa em binario
-    bitmap* message = NULL;
-
+    // Criar um bitmap com 1Mb de tamanho
+    bitmap* message = bitmapInit(Mb);
     
-    // Flag para indicar fim da construcao do bitmap
-    bool end = false;
+
     char c;
-
-    while (end == false) {
-
-        // Obtem caracter do arquivo
-        c = getc(file);
-
-        // No fim do arquivo, adiciona o pseudocaracter
-        if (c == EOF) {
-            end = true; // Sinaliza fim do bitmap e sai do loop no fim
-            c = PSEUDOCARACTER;
-        }
+    while (fread(&c, sizeof(unsigned char), 1, file) > 0)  {
 
         // Atualiza flag
         *flag = 0;
@@ -112,46 +120,47 @@ void encodeMessage (FILE* file, FILE* binaryFile, tTree* tree) {
         // Obtem o codigo binario do caracter realizando a busca na arvore (o qual vem invertido)
         searchTree(tree, c, b, flag);
 
-        // Inverte os bits para obtem o caminho real percorrido na arvore
-        bitmap* b_inverted = bitmapInit(size_tree - 1);
-        for (int i = bitmapGetLength(b) - 1; i >= 0; i--) 
-            bitmapAppendLeastSignificantBit(b_inverted, bitmapGetBit(b, i));
-        bitmapLibera(b);
-
         // Imprime o codigo binario do caracter (propositos de depuracao)
         /* 
         printf("%c ", c);
-        for (unsigned i = 0; i < bitmapGetLength(b_inverted); i++) {
-            printf("%d", bitmapGetBit(b_inverted, i));
+        for (int i = bitmapGetLength(b) - 1; i >= 0; i--) {
+            printf("%d", bitmapGetBit(b, i));
         }
         printf("\n");
-        */
+       */
 
-        // Adiciona o codigo binario no bitmap da mensagem completa  
-        if (message == NULL) {
-            message = b_inverted;
+
+        // Como os bits vem invertidos, usamos o loop ao contrario
+        for (int i = bitmapGetLength(b) - 1; i >= 0; i--) {
+
+            // Verifica se nao execedeu a quantidade bits do message
+            if (bitmapGetLength(message) == bitmapGetMaxSize(message)) {
+
+                // Aloca outro bitmap com o dobro do tamanho
+                bitmap* temp = bitmapInit(bitmapGetMaxSize(message) * 2);
+
+                // Copia dados pra outro bitmap
+                for (int i = bitmapGetLength(message) - 1; i >= 0; i--) 
+                    bitmapAppendLeastSignificantBit(temp, bitmapGetBit(message, i));
+                
+                // Desaloca message
+                bitmapLibera(message);
+
+                // Atualiza referencia
+                message = temp;
+            }
+
+            bitmapAppendLeastSignificantBit(message, bitmapGetBit(b, i));
         }
-        else {
 
-            // Cria um novo bitmap para messagem com um tamanho maior para adicionar a nova sequencia de bits
-            bitmap* new_message = bitmapInit(bitmapGetLength(message) + bitmapGetLength(b_inverted));
-
-            // Copia o conteudo do message para o new_message
-            for (unsigned int i = 0; i < bitmapGetLength(message); i++) 
-                bitmapAppendLeastSignificantBit(new_message, bitmapGetBit(message, i));
-            
-            // Copia o conteudo do b_inverted para o new_message
-            for (unsigned int i = 0; i < bitmapGetLength(b_inverted); i++) 
-                bitmapAppendLeastSignificantBit(new_message, bitmapGetBit(b_inverted, i));
-
-
-            bitmapLibera(message);
-            bitmapLibera(b_inverted);
-
-            // Atualiza message com novo valor 
-            message = new_message;
-        }
+        // Libera o bitmap auxiliar
+        bitmapLibera(b);
     }
+        
+
+    // Salva a quantidade de bits presente na sequencia
+    int sizeMessage = bitmapGetLength(message);
+    fwrite(&sizeMessage, sizeof(int), 1, binaryFile);
 
     // Salva mensagem no arquivo binario 
     unsigned char* conteudo = bitmapGetContents(message);
@@ -160,77 +169,65 @@ void encodeMessage (FILE* file, FILE* binaryFile, tTree* tree) {
     int bits = bitmapGetLength(message);
     while (bits % 8 != 0) bits++;
 
-    // Escreve o conteudo do bitmap no arquivo binario
+    // Escreve o conteudo do bitmap no arquivo binario (byte a byte)
     for (int i = 0; i < bits / 8; i++)
         fwrite(&conteudo[i], sizeof(unsigned char), 1, binaryFile);
-
-    /* 
-    for (unsigned int i = 0; i < bitmapGetLength(message); i++) {
-        printf("%d", bitmapGetBit(message, i));
-    }
-    printf("\n");	
-    */
 
     bitmapLibera(message);
     free(flag);
 }
 
-void decodeMessage (FILE* binaryfile, tTree* tree) {
+void decodeMessage (FILE* binaryfile, tTree* tree, const char* filenameBinaryFile) {
+
+    // Obtem a quantidade de bits que ha na sequencia
+    int sizeMessage = 0;
+    fread(&sizeMessage, sizeof(int), 1, binaryfile); 
+
+    // bitmap que ira armazenar a messagem decodificada
+    bitmap* message = bitmapInit(Mb);
 
     // Le cada caracter armazenado no arquivo binario
     unsigned char c;
 
-    // bitmap que ira armazenar a messagem decodificada
-    bitmap* message = NULL;
-
     // Enquanto a leitura for bem sucedida e nao chegou no pseudocaracter
-    while (fread(&c, sizeof(unsigned char), 1, binaryfile)) {
-        
-        // Armazena os bits do primeiro caracter
-        bitmap* b = bitmapInit(8);
+    while (fread(&c, sizeof(unsigned char), 1, binaryfile) > 0) {
 
         // Itera sobre os bits do caracter e armazena o codigo binario
         for (int i = 7; i >= 0; i--) {
+
             int bit = (c>>i) & 0x01;
-            bitmapAppendLeastSignificantBit(b, bit);
+
+            // Verifica se nao execedeu a quantidade bits do message
+            if (bitmapGetLength(message) == bitmapGetMaxSize(message)) {
+
+                // Aloca outro bitmap com o dobro do tamanho
+                bitmap* temp = bitmapInit(bitmapGetMaxSize(message) * 2);
+
+                // Copia dados pra outro bitmap
+                for (int i = bitmapGetLength(message) - 1; i >= 0; i--) 
+                    bitmapAppendLeastSignificantBit(temp, bitmapGetBit(message, i));
+                
+                // Desaloca message
+                bitmapLibera(message);
+
+                // Atualiza referencia
+                message = temp;
+            }
+
+            bitmapAppendLeastSignificantBit(message, bit);
         }
+    }  
 
-        // Coloca esse bitmap na mensagem (bitmap completo)
-        if (message == NULL) message = b;    
-        else {
-            // Cria um novo bitmap
-            bitmap* new = bitmapInit(bitmapGetLength(message) + bitmapGetLength(b));
+    // Concatena extensao do arquivo com o nome dele
+    char* extension = getExtensionFile(filenameBinaryFile);
+    char* filenameOutput = calloc(strlen("output") + strlen(extension) + 1, sizeof(char));
+    strcpy(filenameOutput, "output");
+    strcat(filenameOutput, extension);
 
-            // Copia o conteudo do message para a nova mensagem
-            for (unsigned int i = 0; i < bitmapGetLength(message); i++) 
-                bitmapAppendLeastSignificantBit(new, bitmapGetBit(message, i));
-
-            // Copia o conteudo do b para a nova mensagem
-            for (unsigned int i = 0; i < bitmapGetLength(b); i++) 
-                bitmapAppendLeastSignificantBit(new, bitmapGetBit(b, i));
-
-            bitmapLibera(message);
-            bitmapLibera(b);
-            message = new;
-        }
-
-        // Caso encontre o pseudocaracter sai do loop
-        if (c == PSEUDOCARACTER) break;
-    } 
-
-    // Cria arquivo de output
-    FILE* output = fopen("output.txt", "w");
+    FILE* output = fopen(filenameOutput, "wb");
     if (output == NULL) {
-        printf("Erro ao abrir arquivo de output\n");
+        printf("Falha ao abrir arquivo\n");
         exit(EXIT_FAILURE);
-    }
-    // Escreve um label inicial no arquivo
-    fprintf(output, "Mensagem decodificada: ");
-
-    // Caso nao haja nenhuma mensagem no arquivo binario
-    if (message == NULL) {
-        fclose(output);
-        return;
     }
 
     // Index para percorrer no bitmap (como se fosse um ponteiro pra cada bit)
@@ -238,14 +235,16 @@ void decodeMessage (FILE* binaryfile, tTree* tree) {
     *index = 0;
 
     // Enquanto nao encontrar o pseudocaracter, escrever os caracters encontrados no arquivo
-    while ((c = searchCharTree(message, index, tree)) != PSEUDOCARACTER) {
+    while ((c = searchCharTree(message, index, sizeMessage, tree)) != '\0') {
         // Escreve o caracter no arquivo de saida (output.txt)
-        fputc(c, output);
+        fwrite(&c, sizeof(unsigned char), 1, output);
     }
-    
 
+    
+    free(filenameOutput);
+    free(extension);
     free(index);
-    bitmapLibera(message);
     fclose(output);
+    bitmapLibera(message);
 }
 

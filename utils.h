@@ -31,10 +31,7 @@ void executeAlgorithm(tTree* nodes [], unsigned int size);
 void encodeMessage (FILE* file, FILE* binaryFile, tTree* tree);
 
 
-/// @brief Decodifica mensagem de um arquivo binario
-/// @param binaryfile arquivo binario a ser lido
-/// @param tree arvore de codificacao 
-void decodeMessage (FILE* binaryfile, tTree* tree);
+void decodeMessage (FILE* binaryfile, tTree* tree, const char* filenameBinaryFile);
 
 
 #endif

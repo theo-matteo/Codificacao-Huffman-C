@@ -1,1 +1,5 @@
-
+none/
+tester-bitmap/
+tester-files/
+*.comp
+*.txt
