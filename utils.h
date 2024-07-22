@@ -1,6 +1,6 @@
 #ifndef _UTILS_H
 #define _UTILS_H
-#define VECTOR_SIZE 128
+#define VECTOR_SIZE 256
 
 #include "tree.h"
 

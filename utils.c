@@ -40,12 +40,9 @@ static char* getExtensionFile (const char* filename) {
 void vectorFrequencyInit (FILE* file, int* vector) {
 
     // Le sequencia de 8 bits (caracter) do arquivo fornecido e armazena frequencia no vetor
-    char c;
-
+    unsigned char c;
     while (fread(&c, sizeof(unsigned char), 1, file) == 1) 
-        if (c >= 0 && c <= 127) vector[(int) c]++;
-    
-    
+        vector[c]++;
 }
 
 void loadVectorTree (tTree* nodes [], int* vector) {
@@ -106,9 +103,8 @@ void encodeMessage (FILE* file, FILE* binaryFile, tTree* tree) {
 
     // Criar um bitmap com 1Mb de tamanho
     bitmap* message = bitmapInit(Mb);
-    
 
-    char c;
+    unsigned char c;
     while (fread(&c, sizeof(unsigned char), 1, file) > 0)  {
 
         // Atualiza flag
@@ -140,7 +136,7 @@ void encodeMessage (FILE* file, FILE* binaryFile, tTree* tree) {
                 bitmap* temp = bitmapInit(bitmapGetMaxSize(message) * 2);
 
                 // Copia dados pra outro bitmap
-                for (int i = bitmapGetLength(message) - 1; i >= 0; i--) 
+                for (int i = 0; i < bitmapGetLength(message); i++)   
                     bitmapAppendLeastSignificantBit(temp, bitmapGetBit(message, i));
                 
                 // Desaloca message
@@ -156,7 +152,6 @@ void encodeMessage (FILE* file, FILE* binaryFile, tTree* tree) {
         // Libera o bitmap auxiliar
         bitmapLibera(b);
     }
-        
 
     // Salva a quantidade de bits presente na sequencia
     int sizeMessage = bitmapGetLength(message);
@@ -204,7 +199,7 @@ void decodeMessage (FILE* binaryfile, tTree* tree, const char* filenameBinaryFil
                 bitmap* temp = bitmapInit(bitmapGetMaxSize(message) * 2);
 
                 // Copia dados pra outro bitmap
-                for (int i = bitmapGetLength(message) - 1; i >= 0; i--) 
+                for (int i = 0; i < bitmapGetLength(message); i++)  
                     bitmapAppendLeastSignificantBit(temp, bitmapGetBit(message, i));
                 
                 // Desaloca message
@@ -217,6 +212,7 @@ void decodeMessage (FILE* binaryfile, tTree* tree, const char* filenameBinaryFil
             bitmapAppendLeastSignificantBit(message, bit);
         }
     }  
+
 
     // Concatena extensao do arquivo com o nome dele
     char* extension = getExtensionFile(filenameBinaryFile);
@@ -234,13 +230,14 @@ void decodeMessage (FILE* binaryfile, tTree* tree, const char* filenameBinaryFil
     unsigned int* index = (unsigned int*) malloc(sizeof(unsigned int));
     *index = 0;
 
-    // Enquanto nao encontrar o pseudocaracter, escrever os caracters encontrados no arquivo
-    while ((c = searchCharTree(message, index, sizeMessage, tree)) != '\0') {
-        // Escreve o caracter no arquivo de saida (output.txt)
-        fwrite(&c, sizeof(unsigned char), 1, output);
+    while (true) {
+        c = searchCharTree(message, index, sizeMessage, tree);
+        if (*index <= sizeMessage) 
+            fwrite(&c, sizeof(unsigned char), 1, output);
+        else
+            break;
     }
 
-    
     free(filenameOutput);
     free(extension);
     free(index);

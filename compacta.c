@@ -3,7 +3,6 @@
 #include <string.h>
 #include "utils.h"
 #include "tree.h"
-#define VECTOR_SIZE 128
 
 int main(int argc, char const *argv[])
 {

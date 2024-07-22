@@ -26,11 +26,11 @@ void writeTreeBinaryFile(tTree* tree, FILE* binaryFile);
 /// @param target caractere a ser buscado
 /// @param b bitmap que ira mapear o caminho ateh o caracter
 /// @param flag para indicar fim da busca
-void searchTree (tTree* tree, char target, bitmap* b, int* flag);
+void searchTree (tTree* tree, unsigned char target, bitmap* b, int* flag);
 
 
 
-char searchCharTree (bitmap* b, unsigned int* index, unsigned int limitBits, tTree* tree);
+unsigned char searchCharTree (bitmap* b, unsigned int* index, unsigned int limitBits, tTree* tree);
 
 /// @brief Compara duas arvores de acordo com a frequencia de caracteres
 /// @param t1 primeira arvore
@@ -46,7 +46,7 @@ unsigned int getSizeTree(tTree* tree);
 /// @brief Define qual caractere a estrutura vai armazenar
 /// @param arvore 
 /// @param caractere
-void setChar(tTree* tree, char c);
+void setChar(tTree* tree, unsigned char c);
 
 /// @brief Define qual a frequencia do caractere
 /// @param arvore

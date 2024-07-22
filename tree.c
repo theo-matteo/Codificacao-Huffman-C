@@ -3,7 +3,7 @@
 
 struct tree {
 
-  char character; // Caractere armazenado
+  unsigned char character; // Caractere armazenado
   unsigned int peso; // Frequencia que um caractere aparece
   unsigned int isLeafNode; // 0 - No nao folha 1 - No folha
 
@@ -74,7 +74,7 @@ void writeTreeBinaryFile(tTree* tree, FILE* binaryFile) {
     }
 }
 
-void searchTree (tTree* tree, char target, bitmap* b, int* flag) {
+void searchTree (tTree* tree, unsigned char target, bitmap* b, int* flag) {
 
   if (tree == NULL) return;
 
@@ -97,7 +97,7 @@ void searchTree (tTree* tree, char target, bitmap* b, int* flag) {
   }
 }
 
-char searchCharTree (bitmap* b, unsigned int* index, unsigned int limitBits, tTree* tree) {
+unsigned char searchCharTree (bitmap* b, unsigned int* index, unsigned int limitBits, tTree* tree) {
 
   // Caso ultrapasse a quantidade de bits presente, sai do loop
   if (tree == NULL || *index > limitBits) return '\0';
@@ -138,7 +138,7 @@ unsigned int getSizeTree(tTree* tree) {
   return (right > left ? right : left);
 }
 
-void setChar(tTree* t, char c) {
+void setChar(tTree* t, unsigned char c) {
   t->character = c;
 }
 
@@ -168,8 +168,9 @@ void printTree(void* t) {
 
   tTree* tree = (tTree*) t;
 
-  if (tree->isLeafNode)
-    printf("Peso: %d Caracter: %c\n", tree->peso, tree->character);
+  if (tree->isLeafNode) 
+    printf("Peso: %d Caracter: %d | %c\n", tree->peso, tree->character, tree->character);
+   
   
   printTree(tree->left);
   printTree(tree->right);
