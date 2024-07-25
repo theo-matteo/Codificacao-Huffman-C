@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "utils.h"
+#include "decoder.h"
 #include "tree.h"
 
 int main (int argc, char const *argv[]) {

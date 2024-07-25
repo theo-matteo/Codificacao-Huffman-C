@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "utils.h"
+#include "encoder.h"
 #include "tree.h"
 
 int main(int argc, char const *argv[])
@@ -19,20 +19,21 @@ int main(int argc, char const *argv[])
         exit(EXIT_FAILURE);
     }
 
-    // Vetor que ira armazenar as frequencias do caracteres no texto
-    int vector[VECTOR_SIZE] = {0};
+    tCharTracker* charTrackerVector[VECTOR_SIZE] = {NULL};
+    for (unsigned int i = 0; i < VECTOR_SIZE; i++)
+        charTrackerVector[i] = createCharTracker();
 
     // Inicializa vetor contabilizando a frequencia dos caracteres
-    vectorFrequencyInit(file, vector);
+    vectorFrequencyInit(file, charTrackerVector);
 
     // Obtem a quantidade de caracteres nao repetidos 
-    unsigned int size = getNumCharacters(vector);
+    unsigned int size = getNumCharacters(charTrackerVector);
 
     // Vetor de arvores
     tTree* nodes[size];
 
     // Inicializa vetor de arvores alocando memoria 
-    loadVectorTree(nodes, vector);
+    loadVectorTree(nodes, charTrackerVector);
 
     // Ordena os nodes
     qsort(nodes, size, sizeof(tTree*), compareTrees);
@@ -42,6 +43,9 @@ int main(int argc, char const *argv[])
 
     // Referencia para a raiz da arvore completa
     tTree* root = nodes[0];
+
+    // Obtem o path de cada caracter na arvore binaria e armazena no Tracker
+    initBinaryPathChars(charTrackerVector, root);
 
     // Cria um arquivo binario
     char* filename = malloc(strlen(argv[1]) + strlen(".comp") + 1);
@@ -61,7 +65,7 @@ int main(int argc, char const *argv[])
     fseek(file, 0, SEEK_SET);
 
     // Escreve a mensagem no arquivo binario
-    encodeMessage(file, binaryFile, root);
+    encodeMessage(file, binaryFile, charTrackerVector);
 
     // Imprime arvore (teste)
     printTree(root);
@@ -73,5 +77,10 @@ int main(int argc, char const *argv[])
     // Fecha o arquivo de entrada
     fclose(file);
     fclose(binaryFile);
+    
+    // Libera o tracker
+    for (unsigned int i = 0; i < VECTOR_SIZE; i++)
+        freeCharTracker(charTrackerVector[i]);
+
     return 0;
 }
