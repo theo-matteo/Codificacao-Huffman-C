@@ -10,7 +10,7 @@
 // Define um buffer de 12KB (1024 * 12)
 #define BUFFER_SIZE 12288
 
-struct charTracker_ {
+struct byteTracker_ {
   
   // Frequencia de cada caracter (1 byte) no arquivo
   unsigned int frequency;
@@ -19,6 +19,10 @@ struct charTracker_ {
   bitmap* b;
 };
 
+/// @brief Obtem o numero de itens (nao nulos) dentro do vetor de arvores
+/// @param nodes vetor de arvores
+/// @param size_nodes tamanho do vetor
+/// @return numero de itens (nao nulos)
 static int getNumItensVector(tTree* nodes [], unsigned int size_nodes) {
   int counter = 0;
   for (unsigned int i = 0; i < size_nodes; i++) 
@@ -26,49 +30,44 @@ static int getNumItensVector(tTree* nodes [], unsigned int size_nodes) {
   return counter;
 }
 
-unsigned int getNumCharacters(tCharTracker* charTrackerVector[]) {
+unsigned int getNumBytes(tByteTracker* byteTrackerVector[]) {
   int counter = 0;
   for (int i = 0; i < VECTOR_SIZE; i++)
-    if (charTrackerVector[i]->frequency != 0) counter++;
+    if (byteTrackerVector[i]->frequency != 0) counter++;
   return counter;
 }
 
-static char* getExtensionFile (const char* filename) {
+tByteTracker** createbyteTracker() {
 
-  char* extension = calloc(16, sizeof(char));
-  int j = 0;
-  bool flag = false;
-
-  for (int i = 0, n = strlen(filename); i < n; i++) {
-    if (filename[i] == '.') flag = !flag;
-    if (flag) extension[j++] = filename[i];
-  }
-
-  return extension;
-}
-
-
-tCharTracker* createCharTracker() {
-
-  tCharTracker* charTracker = (tCharTracker*) malloc(sizeof(tCharTracker));
-  if (charTracker == NULL) {
-    printf("Falha ao alocar o charTracker\n");
+  tByteTracker** byteTracker = (tByteTracker**) calloc(VECTOR_SIZE, sizeof(tByteTracker*));
+  if (byteTracker == NULL) {
+    printf("Falha ao alocar o byteTracker\n");
     exit(EXIT_FAILURE);
   }
 
-  charTracker->frequency = 0;
-  charTracker->b = NULL;
+  for (unsigned int i = 0; i < VECTOR_SIZE; i++) {
+    byteTracker[i] = (tByteTracker*) malloc(sizeof(tByteTracker));
+    byteTracker[i]->frequency = 0;
+    byteTracker[i]->b = NULL;
+  }
 
-  return charTracker;
+  return byteTracker;
 }
 
-void freeCharTracker (tCharTracker* charTracker) {
-  if (!charTracker) return;
-  if (charTracker->b) bitmapLibera(charTracker->b);
-  free(charTracker);
+void freebyteTracker (tByteTracker** byteTracker) {
+
+  if (byteTracker == NULL) return;
+
+  for (unsigned int i = 0; i < VECTOR_SIZE; i++) {
+    if (byteTracker[i]->b) bitmapLibera(byteTracker[i]->b);
+    free(byteTracker[i]);
+  }
+
+  free(byteTracker);
 }
 
-void vectorFrequencyInit (FILE* file, tCharTracker* charTrackerVector[]) {
+
+void vectorFrequencyInit (FILE* file, tByteTracker** byteTrackerVector) {
 
   unsigned char buffer[BUFFER_SIZE];
   unsigned int bytes = 0;
@@ -76,12 +75,12 @@ void vectorFrequencyInit (FILE* file, tCharTracker* charTrackerVector[]) {
   while ((bytes = fread(buffer, sizeof(unsigned char), BUFFER_SIZE, file)) > 0) {
     for (unsigned int i = 0; i < bytes; i++) {
       unsigned int c = buffer[i];
-      charTrackerVector[c]->frequency++;
+      byteTrackerVector[c]->frequency++;
     }
   }
 }
 
-void initBinaryPathChars (tCharTracker* charTrackerVector[], tTree* tree) {
+void initBinaryPathChars (tByteTracker** byteTrackerVector, tTree* tree) {
 
   // Flag para indicar se o caractere foi encontrado
   int* flag = (int*) calloc(1, sizeof(int));
@@ -90,7 +89,7 @@ void initBinaryPathChars (tCharTracker* charTrackerVector[], tTree* tree) {
   for (unsigned int i = 0; i < VECTOR_SIZE; i++) {
 
     // Se esse codigo ASCII nao possui no arquivo, continua
-    if (charTrackerVector[i]->frequency == 0) continue;
+    if (byteTrackerVector[i]->frequency == 0) continue;
     
     // Atualiza estado da flag 
     *flag = 0;
@@ -102,22 +101,22 @@ void initBinaryPathChars (tCharTracker* charTrackerVector[], tTree* tree) {
     createPathCharInTree(tree, i, b, flag);
 
     // Atribui o bitmap a estrutura
-    charTrackerVector[i]->b = b;
+    byteTrackerVector[i]->b = b;
   }
 
   free(flag);
 }
 
-void loadVectorTree (tTree* nodes [], tCharTracker* charTrackerVector[]) {
+void loadVectorTree (tTree* nodes [], tByteTracker* byteTrackerVector[]) {
 
   int index = 0;
   for (int i = 0; i < VECTOR_SIZE; i++) {
     // Se o caractere com codigo ascii 'i' estava presente no arquivo de texto
-    if (charTrackerVector[i]->frequency != 0) {
+    if (byteTrackerVector[i]->frequency != 0) {
       // Cria uma nova arvore para esse caractere
       tTree* tree = createTree();
       setChar(tree, i);
-      setPeso(tree, charTrackerVector[i]->frequency);
+      setPeso(tree, byteTrackerVector[i]->frequency);
 
       // Adiciona no vetor de arvores
       nodes[index] = tree;
@@ -156,7 +155,7 @@ void executeAlgorithm(tTree* nodes [], unsigned int size) {
   }
 }
 
-void encodeMessage (FILE* file, FILE* binaryFile, tCharTracker* charTrackerVector[]) {
+void encodeMessage (FILE* file, FILE* binaryFile, tByteTracker* byteTrackerVector[]) {
 
   // Criar um bitmap com 1Mb de tamanho
   bitmap* message = bitmapInit(Mb);
@@ -170,7 +169,7 @@ void encodeMessage (FILE* file, FILE* binaryFile, tCharTracker* charTrackerVecto
     for (int i = 0; i < bytes; i++) {
 
       unsigned char c = buffer[i];
-      bitmap* b = charTrackerVector[c]->b;
+      bitmap* b = byteTrackerVector[c]->b;
 
       // Como os bits vem invertidos, usamos o loop ao contrario
       for (int i = bitmapGetLength(b) - 1; i >= 0; i--) {

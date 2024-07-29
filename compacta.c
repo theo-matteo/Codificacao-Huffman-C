@@ -23,21 +23,19 @@ int main(int argc, char const *argv[])
         exit(EXIT_FAILURE);
     }
 
-    tCharTracker* charTrackerVector[VECTOR_SIZE] = {NULL};
-    for (unsigned int i = 0; i < VECTOR_SIZE; i++)
-        charTrackerVector[i] = createCharTracker();
+    tByteTracker** byteTrackerVector = createbyteTracker();
 
     // Inicializa vetor contabilizando a frequencia dos caracteres
-    vectorFrequencyInit(file, charTrackerVector);
+    vectorFrequencyInit(file, byteTrackerVector);
 
     // Obtem a quantidade de caracteres nao repetidos 
-    unsigned int size = getNumCharacters(charTrackerVector);
+    unsigned int size = getNumBytes(byteTrackerVector);
 
     // Vetor de arvores
     tTree* nodes[size];
 
     // Inicializa vetor de arvores alocando memoria 
-    loadVectorTree(nodes, charTrackerVector);
+    loadVectorTree(nodes, byteTrackerVector);
 
     // Ordena os nodes
     qsort(nodes, size, sizeof(tTree*), compareTrees);
@@ -49,7 +47,7 @@ int main(int argc, char const *argv[])
     tTree* root = nodes[0];
 
     // Obtem o path binario de cada caracter na arvore binaria e armazena no Tracker
-    initBinaryPathChars(charTrackerVector, root);
+    initBinaryPathChars(byteTrackerVector, root);
 
     // Cria um arquivo binario
     char* filename = malloc(strlen(argv[1]) + strlen(".comp") + 1);
@@ -69,22 +67,20 @@ int main(int argc, char const *argv[])
     fseek(file, 0, SEEK_SET);
 
     // Escreve a mensagem no arquivo binario
-    encodeMessage(file, binaryFile, charTrackerVector);
+    encodeMessage(file, binaryFile, byteTrackerVector);
 
     // Imprime arvore (proposito de depuracao)
     // printTree(root);
 
     // Libera arvore completa
-    freeTree(nodes[0]);
+    freeTree(root);
     free(filename);
+    freebyteTracker(byteTrackerVector);
 
     // Fecha o arquivo de entrada
     fclose(file);
     fclose(binaryFile);
     
-    // Libera o tracker
-    for (unsigned int i = 0; i < VECTOR_SIZE; i++)
-        freeCharTracker(charTrackerVector[i]);
     
     end = clock();
     printf("Codificacao Realizada!\n");
