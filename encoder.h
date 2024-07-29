@@ -7,9 +7,10 @@
 // Define o tamanho do vetor
 #define VECTOR_SIZE 256
 
+// Estrutura ira armazenar a frequencia de cada caracter
 typedef struct charTracker_ tCharTracker;
 
-/* */
+
 tCharTracker* createCharTracker();
 
 void freeCharTracker (tCharTracker* charTracker);

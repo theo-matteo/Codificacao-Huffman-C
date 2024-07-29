@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include "decoder.h"
 #include "tree.h"
 
@@ -10,6 +11,9 @@ int main (int argc, char const *argv[]) {
         printf("Nao foi fornecido arquivo de entrada");
         exit(EXIT_FAILURE);
     }
+
+    clock_t start, end;
+    start = clock();
 
     // Abre o arquivo binario
     FILE* binaryFile = fopen(argv[1], "rb");
@@ -28,5 +32,10 @@ int main (int argc, char const *argv[]) {
     freeTree(root);
     
     fclose(binaryFile);
+
+    end = clock();
+    printf("Decodificacao Realizada!\n");
+    printf("Tempo de execucao: %.6fs\n", (double)(end - start) / CLOCKS_PER_SEC);
+    
     return EXIT_SUCCESS;
 }

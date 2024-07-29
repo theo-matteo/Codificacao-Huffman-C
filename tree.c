@@ -33,7 +33,7 @@ tTree* createTreeFromBinary (FILE* binaryFile) {
 
     // Ler um caractere que indica se uma arvore eh folha ou nao
     char flag;
-    fread(&flag, sizeof(char), 1, binaryFile);
+    fread(&flag, sizeof(unsigned char), 1, binaryFile);
 
     // Cria nova arvore
     tTree* tree = createTree();
@@ -41,7 +41,7 @@ tTree* createTreeFromBinary (FILE* binaryFile) {
     // Se for uma folha, le o caracter e a frequencia
     if (flag == 'F') {
         tree->isLeafNode = 1;
-        fread(&tree->character, sizeof(char), 1, binaryFile);
+        fread(&tree->character, sizeof(unsigned char), 1, binaryFile);
         fread(&tree->peso, sizeof(int), 1, binaryFile);
     } else {
         tree->isLeafNode = 0;
@@ -59,11 +59,11 @@ void writeTreeBinaryFile(tTree* tree, FILE* binaryFile) {
 
     // Escreve um caractere que indica se uma arvore eh folha ou nao
     char c = tree->isLeafNode ? 'F' : 'N';
-    fwrite(&c, sizeof(char), 1, binaryFile);
+    fwrite(&c, sizeof(unsigned char), 1, binaryFile);
 
     // Verifica se a arvore eh uma folha e escreve seu caracter
     if (tree->isLeafNode) {
-        fwrite(&tree->character, sizeof(char), 1, binaryFile);
+        fwrite(&tree->character, sizeof(unsigned char), 1, binaryFile);
         fwrite(&tree->peso, sizeof(int), 1, binaryFile);
     } else {
         fwrite(&tree->peso, sizeof(int), 1, binaryFile);
@@ -74,7 +74,7 @@ void writeTreeBinaryFile(tTree* tree, FILE* binaryFile) {
     }
 }
 
-void searchTree (tTree* tree, unsigned char target, bitmap* b, int* flag) {
+void createPathCharInTree (tTree* tree, unsigned char target, bitmap* b, int* flag) {
 
   if (tree == NULL) return;
 
@@ -84,20 +84,20 @@ void searchTree (tTree* tree, unsigned char target, bitmap* b, int* flag) {
     return;
   }
 
-  searchTree(tree->right, target, b, flag);
+  createPathCharInTree(tree->right, target, b, flag);
   if (*flag == 1) {
     bitmapAppendLeastSignificantBit(b, 1);
     return;
   }
 
-  searchTree(tree->left, target, b, flag);
+  createPathCharInTree(tree->left, target, b, flag);
   if (*flag == 1) {
     bitmapAppendLeastSignificantBit(b, 0);
     return;
   }
 }
 
-unsigned char searchCharTree (bitmap* b, unsigned int* index, unsigned int limitBits, tTree* tree) {
+unsigned char findCharBitmapTree (bitmap* b, unsigned int* index, unsigned int limitBits, tTree* tree) {
 
   // Caso ultrapasse a quantidade de bits presente, sai do loop
   if (tree == NULL || *index > limitBits) return '\0';
@@ -108,11 +108,11 @@ unsigned char searchCharTree (bitmap* b, unsigned int* index, unsigned int limit
   // De acordo com o bit do bitmap em determinado index escolhe a direcao que vai na arvore
   if (bitmapGetBit(b, *index) == 1) {
     (*index)++;
-    return searchCharTree(b, index, limitBits, tree->right);
+    return findCharBitmapTree(b, index, limitBits, tree->right);
   } 
   else {
     (*index)++;
-    return searchCharTree(b, index, limitBits, tree->left);
+    return findCharBitmapTree(b, index, limitBits, tree->left);
   }
 }
 

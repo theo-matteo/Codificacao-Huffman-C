@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "encoder.h"
 #include "tree.h"
 
@@ -11,6 +12,9 @@ int main(int argc, char const *argv[])
         printf("Nao foi fornecido arquivo de entrada");
         exit(EXIT_FAILURE);
     }
+
+    clock_t start, end;
+    start = clock();
     
     // Abre o arquivo no diretorio fornecido na linha de comando
     FILE* file = fopen(argv[1], "rb");
@@ -38,13 +42,13 @@ int main(int argc, char const *argv[])
     // Ordena os nodes
     qsort(nodes, size, sizeof(tTree*), compareTrees);
 
-    // Executa o algoritmo
+    // Executa o algoritmo de Huffmann
     executeAlgorithm(nodes, size);
 
     // Referencia para a raiz da arvore completa
     tTree* root = nodes[0];
 
-    // Obtem o path de cada caracter na arvore binaria e armazena no Tracker
+    // Obtem o path binario de cada caracter na arvore binaria e armazena no Tracker
     initBinaryPathChars(charTrackerVector, root);
 
     // Cria um arquivo binario
@@ -67,8 +71,8 @@ int main(int argc, char const *argv[])
     // Escreve a mensagem no arquivo binario
     encodeMessage(file, binaryFile, charTrackerVector);
 
-    // Imprime arvore (teste)
-    printTree(root);
+    // Imprime arvore (proposito de depuracao)
+    // printTree(root);
 
     // Libera arvore completa
     freeTree(nodes[0]);
@@ -81,6 +85,10 @@ int main(int argc, char const *argv[])
     // Libera o tracker
     for (unsigned int i = 0; i < VECTOR_SIZE; i++)
         freeCharTracker(charTrackerVector[i]);
+    
+    end = clock();
+    printf("Codificacao Realizada!\n");
+    printf("Tempo de execucao: %.6fs\n", (double)(end - start) / CLOCKS_PER_SEC);
 
-    return 0;
+    return EXIT_SUCCESS;
 }

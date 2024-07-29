@@ -7,10 +7,15 @@
 // Define a quantidade de bits de uma mega
 #define Mb 1000000
 
-
+// Define um buffer de 12KB (1024 * 12)
+#define BUFFER_SIZE 12288
 
 struct charTracker_ {
+  
+  // Frequencia de cada caracter (1 byte) no arquivo
   unsigned int frequency;
+
+  // Bitmap do caminho binario do byte na arvore binaria
   bitmap* b;
 };
 
@@ -64,12 +69,16 @@ void freeCharTracker (tCharTracker* charTracker) {
 }
 
 void vectorFrequencyInit (FILE* file, tCharTracker* charTrackerVector[]) {
-  // Le sequencia de 8 bits (caracter) do arquivo fornecido e armazena frequencia no vetor
-  unsigned char c;
-  while (fread(&c, sizeof(unsigned char), 1, file) == 1) 
-    charTrackerVector[c]->frequency++;
-  
-    
+
+  unsigned char buffer[BUFFER_SIZE];
+  unsigned int bytes = 0;
+
+  while ((bytes = fread(buffer, sizeof(unsigned char), BUFFER_SIZE, file)) > 0) {
+    for (unsigned int i = 0; i < bytes; i++) {
+      unsigned int c = buffer[i];
+      charTrackerVector[c]->frequency++;
+    }
+  }
 }
 
 void initBinaryPathChars (tCharTracker* charTrackerVector[], tTree* tree) {
@@ -90,7 +99,7 @@ void initBinaryPathChars (tCharTracker* charTrackerVector[], tTree* tree) {
     bitmap* b = bitmapInit(size_tree - 1);
 
     // Obtem o codigo binario do caracter realizando a busca na arvore (o qual vem invertido)
-    searchTree(tree, i, b, flag);
+    createPathCharInTree(tree, i, b, flag);
 
     // Atribui o bitmap a estrutura
     charTrackerVector[i]->b = b;
@@ -152,32 +161,39 @@ void encodeMessage (FILE* file, FILE* binaryFile, tCharTracker* charTrackerVecto
   // Criar um bitmap com 1Mb de tamanho
   bitmap* message = bitmapInit(Mb);
 
-  unsigned char c;
-  while (fread(&c, sizeof(unsigned char), 1, file) > 0)  {
+  // Cria um buffer para pegar os dados do arquivo
+  unsigned char buffer[BUFFER_SIZE];
+  unsigned int bytes = 0;
 
-    bitmap* b = charTrackerVector[c]->b;
+  while ((bytes = fread(buffer, sizeof(unsigned char), BUFFER_SIZE, file)) > 0)  {
 
-    // Como os bits vem invertidos, usamos o loop ao contrario
-    for (int i = bitmapGetLength(b) - 1; i >= 0; i--) {
+    for (int i = 0; i < bytes; i++) {
 
-      // Verifica se nao execedeu a quantidade bits do message
-      if (bitmapGetLength(message) == bitmapGetMaxSize(message)) {
+      unsigned char c = buffer[i];
+      bitmap* b = charTrackerVector[c]->b;
 
-        // Aloca outro bitmap com o dobro do tamanho
-        bitmap* temp = bitmapInit(bitmapGetMaxSize(message) * 2);
+      // Como os bits vem invertidos, usamos o loop ao contrario
+      for (int i = bitmapGetLength(b) - 1; i >= 0; i--) {
 
-        // Copia dados pra outro bitmap
-        for (int i = 0; i < bitmapGetLength(message); i++)   
-            bitmapAppendLeastSignificantBit(temp, bitmapGetBit(message, i));
-        
-        // Desaloca message
-        bitmapLibera(message);
+        // Verifica se nao execedeu a quantidade bits do message
+        if (bitmapGetLength(message) == bitmapGetMaxSize(message)) {
 
-        // Atualiza referencia
-        message = temp;
+          // Aloca outro bitmap com o dobro do tamanho
+          bitmap* temp = bitmapInit(bitmapGetMaxSize(message) * 2);
+
+          // Copia dados pra outro bitmap
+          for (int i = 0; i < bitmapGetLength(message); i++)   
+              bitmapAppendLeastSignificantBit(temp, bitmapGetBit(message, i));
+          
+          // Desaloca message
+          bitmapLibera(message);
+
+          // Atualiza referencia
+          message = temp;
+        }
+
+        bitmapAppendLeastSignificantBit(message, bitmapGetBit(b, i));
       }
-
-      bitmapAppendLeastSignificantBit(message, bitmapGetBit(b, i));
     }
   }
 

@@ -21,16 +21,21 @@ tTree* createTreeFromBinary (FILE* binaryFile);
 void writeTreeBinaryFile(tTree* tree, FILE* binaryFile);
 
 
-/// @brief Busca um caractere dentro de uma arvore binaria
+/// @brief Cria o caminho binario do bitmap realizando busca de caracter na arvore binaria
 /// @param tree arvore binaria
 /// @param target caractere a ser buscado
 /// @param b bitmap que ira mapear o caminho ateh o caracter
 /// @param flag para indicar fim da busca
-void searchTree (tTree* tree, unsigned char target, bitmap* b, int* flag);
+void createPathCharInTree (tTree* tree, unsigned char target, bitmap* b, int* flag);
 
 
-
-unsigned char searchCharTree (bitmap* b, unsigned int* index, unsigned int limitBits, tTree* tree);
+/// @brief Encontra caractere em uma arvore binaria dado um bitmap contendo a sequencia de bits 
+/// @param b bitmap da mensagem
+/// @param index index atual do bitmap 
+/// @param limitBits limit de bits a serem lidos
+/// @param tree arvore binaria de codificacao
+/// @return caracter/byte encontrado
+unsigned char findCharBitmapTree (bitmap* b, unsigned int* index, unsigned int limitBits, tTree* tree);
 
 /// @brief Compara duas arvores de acordo com a frequencia de caracteres
 /// @param t1 primeira arvore
