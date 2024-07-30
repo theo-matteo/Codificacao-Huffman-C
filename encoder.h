@@ -45,11 +45,11 @@ void loadVectorTree (tTree* nodes [], tByteTracker** byteTrackerVector);
 void executeAlgorithm(tTree* nodes [], unsigned int size);
 
 
-/// @brief Codifica a mensagem no arquivo binario de saida
+/// @brief Codifica o arquivo (file) e armazena no arquivo binario de saida
 /// @param file arquivo fornecido de entrada
 /// @param binaryFile arquivo binario de saida
 /// @param byteTrackerVector vetor byteTracker
-void encodeMessage (FILE* file, FILE* binaryFile, tByteTracker** byteTrackerVector);
+void encodeFile (FILE* file, FILE* binaryFile, tByteTracker** byteTrackerVector);
 
 
 /// @brief Obtem o numero de caracteres/bytes nao repetidos 

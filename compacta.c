@@ -5,6 +5,8 @@
 #include "encoder.h"
 #include "tree.h"
 
+/* Programa criado por Theo Matteo Ferreira de Sa - ED 2024 */
+
 int main(int argc, char const *argv[])
 {
     // Verifica se o arquivo foi fornecido na linha de comando
@@ -66,8 +68,8 @@ int main(int argc, char const *argv[])
     // Retorna o ponteiro do arquivo para o inicio
     fseek(file, 0, SEEK_SET);
 
-    // Escreve a mensagem no arquivo binario
-    encodeMessage(file, binaryFile, byteTrackerVector);
+    // Escreve o arquivo compactado no arquivo binario
+    encodeFile(file, binaryFile, byteTrackerVector);
 
     // Imprime arvore (proposito de depuracao)
     // printTree(root);

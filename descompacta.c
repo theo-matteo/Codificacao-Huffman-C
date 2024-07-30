@@ -4,6 +4,8 @@
 #include "decoder.h"
 #include "tree.h"
 
+/* Programa criado por Theo Matteo Ferreira de Sa - ED 2024 */
+
 int main (int argc, char const *argv[]) {
     
     // Verifica se o arquivo foi fornecido na linha de comando
@@ -26,11 +28,10 @@ int main (int argc, char const *argv[]) {
     tTree* root = createTreeFromBinary(binaryFile);
 
     // Ler a sequencia de bits do arquivo binario
-    decodeMessage(binaryFile, root, argv[1]);
+    decodeFile(binaryFile, root, argv[1]);
 
     // printTree(root); (teste de impressao)
     freeTree(root);
-    
     fclose(binaryFile);
 
     end = clock();

@@ -28,39 +28,38 @@ static char* getExtensionFile (const char* filename) {
   return extension;
 }
 
-void decodeMessage (FILE* binaryfile, tTree* tree, const char* filenameBinaryFile) {
+void decodeFile (FILE* binaryfile, tTree* tree, const char* filenameBinaryFile) {
 
     // Obtem a quantidade de bits que ha na sequencia
-    int sizeMessage = 0;
-    fread(&sizeMessage, sizeof(int), 1, binaryfile); 
+    int sizebitmapFile = 0;
+    fread(&sizebitmapFile, sizeof(int), 1, binaryfile); 
 
-    // bitmap que ira armazenar a messagem decodificada
-    bitmap* message = bitmapInit(Mb);
+    // bitmap que ira armazenar a sequencia de bits do arquivo a ser descompactado
+    bitmap* bitmapFile = bitmapInit(Mb);
 
-    // Le cada caracter armazenado no arquivo binarios
+    // Le cada caracter armazenado no arquivo binario
     unsigned char c, buffer[BUFFER_SIZE];
     unsigned int bytes = 0;
 
-    // Enquanto a leitura for bem sucedida e nao chegou no pseudocaracter
     while ((bytes = fread(buffer, sizeof(unsigned char), BUFFER_SIZE, binaryfile)) > 0) {
         // Itera sobre os bits do caracter e armazena o codigo binario
         for (unsigned int i = 0; i < bytes; i++) {
             unsigned int c = buffer[i];
             for (int i = 7; i >= 0; i--) {
                 int bit = (c>>i) & 0x01;
-                // Verifica se nao execedeu a quantidade bits do message
-                if (bitmapGetLength(message) == bitmapGetMaxSize(message)) {
+                // Verifica se nao execedeu a quantidade bits do bitmapFile
+                if (bitmapGetLength(bitmapFile) == bitmapGetMaxSize(bitmapFile)) {
                     // Aloca outro bitmap com o dobro do tamanho
-                    bitmap* temp = bitmapInit(bitmapGetMaxSize(message) * 2);
+                    bitmap* temp = bitmapInit(bitmapGetMaxSize(bitmapFile) * 2);
                     // Copia dados pra outro bitmap
-                    for (int i = 0; i < bitmapGetLength(message); i++)  
-                        bitmapAppendLeastSignificantBit(temp, bitmapGetBit(message, i));
-                    // Desaloca message
-                    bitmapLibera(message);
+                    for (int i = 0; i < bitmapGetLength(bitmapFile); i++)  
+                        bitmapAppendLeastSignificantBit(temp, bitmapGetBit(bitmapFile, i));
+                    // Desaloca bitmapFile
+                    bitmapLibera(bitmapFile);
                     // Atualiza referencia
-                    message = temp;
+                    bitmapFile = temp;
                 }
-                bitmapAppendLeastSignificantBit(message, bit);
+                bitmapAppendLeastSignificantBit(bitmapFile, bit);
             }
         }
     }  
@@ -81,10 +80,10 @@ void decodeMessage (FILE* binaryfile, tTree* tree, const char* filenameBinaryFil
     unsigned int* index = (unsigned int*) malloc(sizeof(unsigned int));
     *index = 0;
 
-    // Realiza busca na arvore binaria
+    // Realiza busca na arvore binaria ate o limite bits nao ser ultrapassado
     while (true) {
-        c = findCharBitmapTree(message, index, sizeMessage, tree);
-        if (*index <= sizeMessage) 
+        c = findCharBitmapTree(bitmapFile, index, sizebitmapFile, tree);
+        if (*index <= sizebitmapFile) 
             fwrite(&c, sizeof(unsigned char), 1, output);
         else
             break;
@@ -94,6 +93,6 @@ void decodeMessage (FILE* binaryfile, tTree* tree, const char* filenameBinaryFil
     free(extension);
     free(index);
     fclose(output);
-    bitmapLibera(message);
+    bitmapLibera(bitmapFile);
 }
 

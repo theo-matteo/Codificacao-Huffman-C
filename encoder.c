@@ -155,10 +155,10 @@ void executeAlgorithm(tTree* nodes [], unsigned int size) {
   }
 }
 
-void encodeMessage (FILE* file, FILE* binaryFile, tByteTracker* byteTrackerVector[]) {
+void encodeFile (FILE* file, FILE* binaryFile, tByteTracker* byteTrackerVector[]) {
 
-  // Criar um bitmap com 1Mb de tamanho
-  bitmap* message = bitmapInit(Mb);
+  // Criar um bitmap com 1Mb de tamanho que ira armazenar a sequencia de bits do arquivo compactado
+  bitmap* fileBitmap = bitmapInit(Mb);
 
   // Cria um buffer para pegar os dados do arquivo
   unsigned char buffer[BUFFER_SIZE];
@@ -174,42 +174,42 @@ void encodeMessage (FILE* file, FILE* binaryFile, tByteTracker* byteTrackerVecto
       // Como os bits vem invertidos, usamos o loop ao contrario
       for (int i = bitmapGetLength(b) - 1; i >= 0; i--) {
 
-        // Verifica se nao execedeu a quantidade bits do message
-        if (bitmapGetLength(message) == bitmapGetMaxSize(message)) {
+        // Verifica se nao execedeu a quantidade bits do fileBitmap
+        if (bitmapGetLength(fileBitmap) == bitmapGetMaxSize(fileBitmap)) {
 
           // Aloca outro bitmap com o dobro do tamanho
-          bitmap* temp = bitmapInit(bitmapGetMaxSize(message) * 2);
+          bitmap* temp = bitmapInit(bitmapGetMaxSize(fileBitmap) * 2);
 
           // Copia dados pra outro bitmap
-          for (int i = 0; i < bitmapGetLength(message); i++)   
-              bitmapAppendLeastSignificantBit(temp, bitmapGetBit(message, i));
+          for (int i = 0; i < bitmapGetLength(fileBitmap); i++)   
+              bitmapAppendLeastSignificantBit(temp, bitmapGetBit(fileBitmap, i));
           
-          // Desaloca message
-          bitmapLibera(message);
+          // Desaloca fileBitmap
+          bitmapLibera(fileBitmap);
 
           // Atualiza referencia
-          message = temp;
+          fileBitmap = temp;
         }
 
-        bitmapAppendLeastSignificantBit(message, bitmapGetBit(b, i));
+        bitmapAppendLeastSignificantBit(fileBitmap, bitmapGetBit(b, i));
       }
     }
   }
 
   // Salva a quantidade de bits presente na sequencia
-  int sizeMessage = bitmapGetLength(message);
-  fwrite(&sizeMessage, sizeof(int), 1, binaryFile);
+  int sizefileBitmap = bitmapGetLength(fileBitmap);
+  fwrite(&sizefileBitmap, sizeof(int), 1, binaryFile);
 
   // Salva mensagem no arquivo binario 
-  unsigned char* conteudo = bitmapGetContents(message);
+  unsigned char* conteudo = bitmapGetContents(fileBitmap);
 
   // Arredonda o numero de bits da mensagem
-  int bits = bitmapGetLength(message);
+  int bits = bitmapGetLength(fileBitmap);
   while (bits % 8 != 0) bits++;
 
   // Escreve o conteudo do bitmap no arquivo binario (byte a byte)
   for (int i = 0; i < bits / 8; i++)
       fwrite(&conteudo[i], sizeof(unsigned char), 1, binaryFile);
 
-  bitmapLibera(message);
+  bitmapLibera(fileBitmap);
 }
