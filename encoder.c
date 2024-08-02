@@ -206,10 +206,11 @@ void encodeFile (FILE* file, FILE* binaryFile, tByteTracker* byteTrackerVector[]
   // Arredonda o numero de bits da mensagem
   int bits = bitmapGetLength(fileBitmap);
   while (bits % 8 != 0) bits++;
+  int bytesTotal = bits / 8;
 
-  // Escreve o conteudo do bitmap no arquivo binario (byte a byte)
-  for (int i = 0; i < bits / 8; i++)
-      fwrite(&conteudo[i], sizeof(unsigned char), 1, binaryFile);
+  // Escreve o conteudo do bitmap no arquivo binario
+  fwrite(conteudo, sizeof(unsigned char), bytesTotal, binaryFile);
+
 
   bitmapLibera(fileBitmap);
 }
